@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  PROFESSOR
+}
+
+enum ProjectStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  role          UserRole
+  department    String
+  bio           String?
+  avatarUrl     String?
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // İlişkiler
+  tags          UserTag[]
+  projects      Project[]      @relation("ProjectOwner")
+  applications  Application[]  @relation("Applicant")
+  publications  Publication[]
+
+  // Better Auth ilişkileri
+  sessions      Session[]
+  accounts      Account[]
+}
+
+model Tag {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  category String?
+
+  users        UserTag[]
+  projects     ProjectTag[]
+  publications PublicationTag[]
+}
+
+model UserTag {
+  userId String
+  tagId  String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([userId, tagId])
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  status      ProjectStatus @default(OPEN)
+  maxMembers  Int           @default(3)
+  ownerId     String
+  owner       User          @relation("ProjectOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  tags         ProjectTag[]
+  applications Application[]
+}
+
+model ProjectTag {
+  projectId String
+  tagId     String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+}
+
+model Publication {
+  id        String   @id @default(cuid())
+  title     String
+  abstract  String?
+  url       String?
+  year      Int?
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+
+  tags PublicationTag[]
+}
+
+model PublicationTag {
+  publicationId String
+  tagId         String
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([publicationId, tagId])
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  status      ApplicationStatus @default(PENDING)
+  message     String?
+  projectId   String
+  project     Project           @relation(fields: [projectId], references: [id])
+  applicantId String
+  applicant   User              @relation("Applicant", fields: [applicantId], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([projectId, applicantId])
+}
+
+// Better Auth tabloları
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
