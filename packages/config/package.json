@@ -1,0 +1,17 @@
+{
+  "name": "@fp3/config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.nextjs.json": "./tsconfig.nextjs.json",
+    "./tsconfig.node.json": "./tsconfig.node.json",
+    "./tsconfig.react-native.json": "./tsconfig.react-native.json"
+  },
+  "files": [
+    "tsconfig.base.json",
+    "tsconfig.nextjs.json",
+    "tsconfig.node.json",
+    "tsconfig.react-native.json"
+  ]
+}
