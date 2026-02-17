@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "FP3",
+    "slug": "fp3",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "fp3",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fp3.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#6366f1"
+      },
+      "package": "com.fp3.app"
+    },
+    "plugins": ["expo-router", "expo-secure-store"]
+  }
+}
