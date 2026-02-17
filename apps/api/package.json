@@ -1,0 +1,27 @@
+{
+  "name": "@fp3/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fastify": "^5.2.0",
+    "@fastify/cors": "^11.0.0",
+    "@fastify/jwt": "^9.0.0",
+    "@prisma/client": "^6.4.0",
+    "@fp3/shared-types": "workspace:*",
+    "@fp3/validation": "workspace:*",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@fp3/config": "workspace:*",
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0",
+    "@types/node": "^22.0.0",
+    "prisma": "^6.4.0"
+  }
+}
