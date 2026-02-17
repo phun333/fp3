@@ -6,22 +6,34 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "prisma:studio": "prisma studio",
+    "test:auth": "tsx src/test/auth-test.ts"
   },
   "dependencies": {
-    "fastify": "^5.2.0",
+    "@fastify/cookie": "^11.0.2",
     "@fastify/cors": "^11.0.0",
     "@fastify/jwt": "^9.0.0",
-    "@prisma/client": "^6.4.0",
+    "@fastify/swagger": "^9.7.0",
     "@fp3/shared-types": "workspace:*",
     "@fp3/validation": "workspace:*",
+    "@prisma/client": "^6.4.0",
+    "@scalar/fastify-api-reference": "^1.44.20",
+    "better-auth": "^1.4.18",
+    "dotenv": "^17.3.1",
+    "fastify": "^5.2.0",
+    "fastify-plugin": "^5.1.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@fp3/config": "workspace:*",
-    "typescript": "^5.7.0",
-    "tsx": "^4.19.0",
     "@types/node": "^22.0.0",
-    "prisma": "^6.4.0"
+    "pg": "^8.18.0",
+    "prisma": "^6.4.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
   }
 }
