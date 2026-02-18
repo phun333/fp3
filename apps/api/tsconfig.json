@@ -2,7 +2,13 @@
   "extends": "@fp3/config/tsconfig.node.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "baseUrl": ".",
+    "paths": {
+      "@fp3/shared-types": ["../../packages/shared-types/src/index.ts"],
+      "@fp3/shared-types/*": ["../../packages/shared-types/src/*"],
+      "@fp3/validation": ["../../packages/validation/src/index.ts"],
+      "@fp3/validation/*": ["../../packages/validation/src/*"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
