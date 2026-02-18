@@ -13,6 +13,14 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // Dev ortamda false, prod'da true yapılacak
+    signUp: {
+      async beforeCreate({ email, ...rest }: { email: string; [key: string]: any }) {
+        if (!email.endsWith("@ostimteknik.edu.tr")) {
+          throw new Error("Sadece @ostimteknik.edu.tr uzantılı e-posta adresleri kabul edilir");
+        }
+        return { email, ...rest };
+      },
+    },
   },
 
   user: {
@@ -54,6 +62,8 @@ export const auth = betterAuth({
     },
     sendOnSignUp: true,
   },
+
+  trustedOrigins: process.env.CORS_ORIGINS?.split(",") || ["http://localhost:3000"],
 
   advanced: {
     cookiePrefix: "fp3",

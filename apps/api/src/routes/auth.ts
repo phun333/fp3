@@ -3,42 +3,48 @@ import { auth } from "../lib/auth";
 import { toNodeHandler } from "better-auth/node";
 
 const authRoutes: FastifyPluginAsync = async (fastify) => {
-  // Email domain doğrulama - signup isteğini intercept et
-  fastify.addHook("preHandler", async (request, reply) => {
-    const url = new URL(request.url, `http://${request.headers.host}`);
-    
-    // Sadece signup endpoint'inde domain kontrolü yap
-    if (url.pathname === "/api/auth/sign-up/email" && request.method === "POST") {
-      const body = request.body as any;
-      const email = body?.email;
-
-      if (email && !email.endsWith("@ostimteknik.edu.tr")) {
-        return reply.status(400).send({
-          success: false,
-          error: "Sadece @ostimteknik.edu.tr uzantılı e-posta adresleri kabul edilir",
-        });
-      }
-
-      // Rol kontrolü
-      const role = body?.role;
-      if (role && !["STUDENT", "PROFESSOR"].includes(role)) {
-        return reply.status(400).send({
-          success: false,
-          error: "Geçersiz rol. STUDENT veya PROFESSOR seçmelisiniz",
-        });
-      }
-    }
-  });
-
-  // Better Auth handler - tüm /api/auth/* isteklerini yakala
   const nodeHandler = toNodeHandler(auth);
 
-  fastify.all("/api/auth/*", { schema: { hide: true } }, async (request, reply) => {
-    // Fastify raw req/res'i node handler'a ilet
-    await nodeHandler(request.raw, reply.raw);
-    // reply zaten gönderildi, Fastify'a bunu bildir
-    reply.hijack();
+  // Auth route'larında Fastify'ın body parsing'ini devre dışı bırak
+  // Böylece Better Auth raw stream'den body'yi kendisi okuyabilir
+  fastify.removeAllContentTypeParsers();
+  fastify.addContentTypeParser("*", function (_request, _payload, done) {
+    done(null);
   });
+
+  // Email domain doğrulama - Better Auth'un hook sistemi ile
+  // (preHandler'da body okumak stream'i bozar, bu yüzden
+  //  domain kontrolünü Better Auth config'inde yapıyoruz)
+
+  // Better Auth handler - tüm /api/auth/* isteklerini yakala
+  fastify.all(
+    "/api/auth/*",
+    {
+      schema: { hide: true },
+      config: { rawBody: true },
+    },
+    async (request, reply) => {
+      // reply.hijack() Fastify CORS'u bypass eder, CORS header'larını elle ekle
+      const origin = request.headers.origin;
+      const allowedOrigins = process.env.CORS_ORIGINS?.split(",") || ["http://localhost:3000"];
+      if (origin && allowedOrigins.includes(origin)) {
+        reply.raw.setHeader("Access-Control-Allow-Origin", origin);
+        reply.raw.setHeader("Access-Control-Allow-Credentials", "true");
+        reply.raw.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        reply.raw.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      }
+
+      // OPTIONS preflight
+      if (request.method === "OPTIONS") {
+        reply.raw.statusCode = 204;
+        reply.raw.end();
+        return reply.hijack();
+      }
+
+      await nodeHandler(request.raw, reply.raw);
+      reply.hijack();
+    }
+  );
 };
 
 export default authRoutes;

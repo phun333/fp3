@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+// Next.js rewrites ile proxy: /api/* → localhost:4000/api/*
+// Bu sayede cookie'ler aynı origin'den gelir (SameSite=Lax çalışır)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface ApiOptions {
   method?: string;
