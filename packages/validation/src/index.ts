@@ -33,6 +33,7 @@ export const updateProfileSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   bio: z.string().max(1000).optional(),
   department: z.string().min(2).optional(),
+  year: z.number().int().min(1).max(6).optional().nullable(),
   avatarUrl: z.string().url().optional().nullable(),
 });
 
@@ -96,6 +97,33 @@ export const searchSchema = paginationSchema.extend({
 export const projectSearchSchema = searchSchema.extend({
   status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED"]).optional(),
 });
+
+// ===== Matching Schemas =====
+export const matchPreferencesSchema = z.object({
+  purpose: z.enum(["ARTICLE", "PROJECT"]),
+  description: z.string().max(2000).optional(),
+  tagIds: z.array(z.string()).optional(), // override user tags
+  year: z.coerce.number().int().min(1).max(6).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export type MatchPreferencesInput = z.infer<typeof matchPreferencesSchema>;
+
+// ===== Saved Match Schemas =====
+export const saveMatchSchema = z.object({
+  professorId: z.string().min(1, "Akademisyen ID gerekli"),
+  purpose: z.enum(["ARTICLE", "PROJECT"]),
+  description: z.string().max(2000).optional(),
+  matchScore: z.number().int().min(0).max(100).default(0),
+});
+
+export const unsaveMatchSchema = z.object({
+  professorId: z.string().min(1, "Akademisyen ID gerekli"),
+  purpose: z.enum(["ARTICLE", "PROJECT"]),
+});
+
+export type SaveMatchInput = z.infer<typeof saveMatchSchema>;
+export type UnsaveMatchInput = z.infer<typeof unsaveMatchSchema>;
 
 // ===== AI Schemas =====
 export const aiExtractTagsSchema = z.object({

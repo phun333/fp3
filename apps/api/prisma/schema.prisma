@@ -31,6 +31,7 @@ model User {
   name          String
   role          UserRole
   department    String
+  year          Int?     // Kaçıncı sınıf (1-4, sadece öğrenciler için)
   bio           String?
   avatarUrl     String?
   emailVerified Boolean  @default(false)
@@ -42,6 +43,10 @@ model User {
   projects      Project[]      @relation("ProjectOwner")
   applications  Application[]  @relation("Applicant")
   publications  Publication[]
+
+  // Kayıtlı eşleşmeler
+  savedMatches    SavedMatch[] @relation("SavedMatches")
+  savedByStudents SavedMatch[] @relation("SavedByStudents")
 
   // Better Auth ilişkileri
   sessions      Session[]
@@ -125,6 +130,20 @@ model Application {
   updatedAt   DateTime          @updatedAt
 
   @@unique([projectId, applicantId])
+}
+
+model SavedMatch {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation("SavedMatches", fields: [userId], references: [id], onDelete: Cascade)
+  professorId   String
+  professor     User     @relation("SavedByStudents", fields: [professorId], references: [id], onDelete: Cascade)
+  purpose       String   // "ARTICLE" | "PROJECT"
+  description   String?
+  matchScore    Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, professorId, purpose])
 }
 
 // Better Auth tabloları
