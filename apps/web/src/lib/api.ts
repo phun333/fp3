@@ -122,6 +122,36 @@ export const discoverApi = {
     api(`/api/discover/students${params ? `?${params}` : ""}`),
 };
 
+// Matching API
+export const matchingApi = {
+  matchProfessors: (body: {
+    purpose: "ARTICLE" | "PROJECT";
+    description?: string;
+    tagIds?: string[];
+    year?: number;
+    limit?: number;
+  }) => api("/api/match/professors", { method: "POST", body }),
+};
+
+// Saved Matches API
+export const savedMatchesApi = {
+  save: (body: {
+    professorId: string;
+    purpose: "ARTICLE" | "PROJECT";
+    description?: string;
+    matchScore?: number;
+  }) => api("/api/saved-matches", { method: "POST", body }),
+
+  unsave: (body: { professorId: string; purpose: "ARTICLE" | "PROJECT" }) =>
+    api("/api/saved-matches", { method: "DELETE", body }),
+
+  list: (params?: string) =>
+    api(`/api/saved-matches${params ? `?${params}` : ""}`),
+
+  ids: (purpose?: string) =>
+    api(`/api/saved-matches/ids${purpose ? `?purpose=${purpose}` : ""}`),
+};
+
 // AI API
 export const aiApi = {
   suggestTags: (text: string, top_n?: number) =>
