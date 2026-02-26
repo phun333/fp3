@@ -16,6 +16,8 @@ import applicationRoutes from "./routes/applications";
 import tagRoutes from "./routes/tags";
 import discoverRoutes from "./routes/discover";
 import aiRoutes from "./routes/ai";
+import matchingRoutes from "./routes/matching";
+import savedMatchRoutes from "./routes/saved-matches";
 
 const app = Fastify({
   logger: true,
@@ -25,6 +27,7 @@ const app = Fastify({
 app.register(cors, {
   origin: process.env.CORS_ORIGINS?.split(",") || ["http://localhost:3000"],
   credentials: true,
+  methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 });
 
 // Cookie desteği
@@ -81,6 +84,8 @@ app.register(applicationRoutes);
 app.register(tagRoutes);
 app.register(discoverRoutes);
 app.register(aiRoutes);
+app.register(matchingRoutes);
+app.register(savedMatchRoutes);
 
 // Global error handler
 app.setErrorHandler((error: any, request, reply) => {
