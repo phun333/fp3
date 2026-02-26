@@ -16,15 +16,18 @@ import {
   GraduationCap,
   ClipboardText,
   FolderOpen,
+  BookmarkSimple,
 } from "@phosphor-icons/react";
 
 const studentLinks = [
   { href: "/dashboard", label: "Ana Sayfa", icon: House },
-  { href: "/discover", label: "Keşfet", icon: Compass },
+  { href: "/matching", label: "Eşleştirme", icon: Compass },
+  { href: "/discover", label: "Keşfet", icon: GraduationCap },
   { href: "/professors", label: "Akademisyenler", icon: Users },
   { href: "/projects", label: "Projeler", icon: Briefcase },
   { href: "/publications", label: "Yayınlar", icon: BookOpen },
   { href: "/my-applications", label: "Başvurularım", icon: ClipboardText },
+  { href: "/saved-matches", label: "Kaydedilenler", icon: BookmarkSimple },
   { href: "/profile", label: "Profilim", icon: UserCircle },
 ];
 
@@ -51,7 +54,7 @@ export function SidebarNav() {
   };
 
   return (
-    <aside className="hidden md:flex w-64 flex-col border-r bg-sidebar h-screen sticky top-0">
+    <aside className="hidden md:flex w-64 flex-col border-r bg-sidebar h-screen sticky top-0 shadow-sm">
       <div className="flex h-16 items-center gap-2 border-b px-6">
         <GraduationCap size={28} weight="duotone" className="text-sidebar-primary" />
         <span className="text-lg font-bold text-sidebar-foreground">FP3</span>

@@ -38,7 +38,7 @@ export function ProjectCard({
 
   return (
     <Link href={`/projects/${id}`}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+      <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full border-border/80">
         <CardContent className="p-5">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold line-clamp-1">{title}</h3>

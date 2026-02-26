@@ -35,7 +35,7 @@ export function ProfileCard({
 
   return (
     <Link href={href}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+      <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full border-border/80">
         <CardContent className="p-5">
           <div className="flex items-start gap-4">
             <Avatar className="h-12 w-12">
