@@ -16,10 +16,22 @@ import {
   UserCircle,
   SignOut,
   GraduationCap,
+  BookmarkSimple,
 } from "@phosphor-icons/react";
 import { useState } from "react";
 
-const links = [
+const studentLinks = [
+  { href: "/dashboard", label: "Ana Sayfa", icon: House },
+  { href: "/matching", label: "Eşleştirme", icon: Compass },
+  { href: "/discover", label: "Keşfet", icon: House },
+  { href: "/professors", label: "Akademisyenler", icon: Users },
+  { href: "/projects", label: "Projeler", icon: Briefcase },
+  { href: "/publications", label: "Yayınlar", icon: BookOpen },
+  { href: "/saved-matches", label: "Kaydedilenler", icon: BookmarkSimple },
+  { href: "/profile", label: "Profilim", icon: UserCircle },
+];
+
+const professorLinks = [
   { href: "/dashboard", label: "Ana Sayfa", icon: House },
   { href: "/discover", label: "Keşfet", icon: Compass },
   { href: "/professors", label: "Akademisyenler", icon: Users },
@@ -52,7 +64,7 @@ export function MobileNav() {
             <span className="font-bold">FP3</span>
           </div>
           <nav className="p-4 space-y-1">
-            {links.map((link) => (
+            {(user?.role === "PROFESSOR" ? professorLinks : studentLinks).map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
