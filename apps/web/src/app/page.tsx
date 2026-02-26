@@ -1,7 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback, type ReactNode } from "react";
+import { useAuth } from "@/lib/auth-context";
+
+// Landing page'de auth opsiyonel — hata fırlatmasın
+function useAuthSafe() {
+  try {
+    return useAuth();
+  } catch {
+    return { user: null, loading: false };
+  }
+}
 import { Button } from "@/components/ui/button";
 import {
   MagnifyingGlass,
@@ -317,12 +328,29 @@ function FeatureCard({ feature, index }: { feature: (typeof features)[number]; i
 /* ------------------------------------------------------------------ */
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuthSafe();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Giriş yapmışsa dashboard'a yönlendir, loading'de veya redirect sırasında boş göster
+  if (authLoading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Yükleniyor...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-white text-slate-900 selection:bg-indigo-200">
