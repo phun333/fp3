@@ -96,7 +96,7 @@ const professorRoutes: FastifyPluginAsync = async (fastify) => {
       description: "Akademisyenin profili, projeleri ve yayınları ile birlikte detay bilgisi",
       params: {
         type: "object",
-        properties: { id: { type: "string", format: "uuid" } },
+        properties: { id: { type: "string",  } },
         required: ["id"],
       },
       response: {

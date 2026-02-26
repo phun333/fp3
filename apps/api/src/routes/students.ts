@@ -93,7 +93,7 @@ const studentRoutes: FastifyPluginAsync = async (fastify) => {
       description: "Öğrencinin profili ve başvurularıyla birlikte detay bilgisi",
       params: {
         type: "object",
-        properties: { id: { type: "string", format: "uuid" } },
+        properties: { id: { type: "string",  } },
         required: ["id"],
       },
       response: {

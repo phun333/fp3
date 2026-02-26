@@ -72,6 +72,7 @@ const profileRoutes: FastifyPluginAsync = async (fastify) => {
             name: { type: "string", minLength: 2 },
             department: { type: "string", nullable: true },
             bio: { type: "string", nullable: true },
+            year: { type: "integer", minimum: 1, maximum: 6, nullable: true },
           },
         },
         response: {
@@ -123,7 +124,7 @@ const profileRoutes: FastifyPluginAsync = async (fastify) => {
       params: {
         type: "object",
         properties: {
-          id: { type: "string", format: "uuid", description: "Kullanıcı ID" },
+          id: { type: "string", description: "Kullanıcı ID" },
         },
         required: ["id"],
       },
@@ -191,7 +192,7 @@ const profileRoutes: FastifyPluginAsync = async (fastify) => {
           properties: {
             tagIds: {
               type: "array",
-              items: { type: "string", format: "uuid" },
+              items: { type: "string" },
               description: "Atanacak tag ID listesi",
             },
           },

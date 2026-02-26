@@ -21,7 +21,7 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
         security: [{ cookieAuth: [] }],
         params: {
           type: "object",
-          properties: { id: { type: "string", format: "uuid", description: "Proje ID" } },
+          properties: { id: { type: "string", description: "Proje ID" } },
           required: ["id"],
         },
         body: {
@@ -114,7 +114,7 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
         security: [{ cookieAuth: [] }],
         params: {
           type: "object",
-          properties: { id: { type: "string", format: "uuid", description: "Proje ID" } },
+          properties: { id: { type: "string", description: "Proje ID" } },
           required: ["id"],
         },
         querystring: {
@@ -205,7 +205,7 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
         security: [{ cookieAuth: [] }],
         params: {
           type: "object",
-          properties: { id: { type: "string", format: "uuid", description: "Başvuru ID" } },
+          properties: { id: { type: "string", description: "Başvuru ID" } },
           required: ["id"],
         },
         body: {

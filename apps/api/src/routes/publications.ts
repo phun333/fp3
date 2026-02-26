@@ -27,7 +27,7 @@ const publicationRoutes: FastifyPluginAsync = async (fastify) => {
             abstract: { type: "string", nullable: true },
             url: { type: "string", format: "uri", nullable: true },
             publishedAt: { type: "string", format: "date-time", nullable: true },
-            tagIds: { type: "array", items: { type: "string", format: "uuid" } },
+            tagIds: { type: "array", items: { type: "string",  } },
           },
         },
         response: {
@@ -163,7 +163,7 @@ const publicationRoutes: FastifyPluginAsync = async (fastify) => {
       summary: "Yayın detayı",
       params: {
         type: "object",
-        properties: { id: { type: "string", format: "uuid" } },
+        properties: { id: { type: "string",  } },
         required: ["id"],
       },
       response: {
@@ -215,7 +215,7 @@ const publicationRoutes: FastifyPluginAsync = async (fastify) => {
         security: [{ cookieAuth: [] }],
         params: {
           type: "object",
-          properties: { id: { type: "string", format: "uuid" } },
+          properties: { id: { type: "string",  } },
           required: ["id"],
         },
         body: {
@@ -225,7 +225,7 @@ const publicationRoutes: FastifyPluginAsync = async (fastify) => {
             abstract: { type: "string", nullable: true },
             url: { type: "string", nullable: true },
             publishedAt: { type: "string", nullable: true },
-            tagIds: { type: "array", items: { type: "string", format: "uuid" } },
+            tagIds: { type: "array", items: { type: "string",  } },
           },
         },
         response: {
@@ -303,7 +303,7 @@ const publicationRoutes: FastifyPluginAsync = async (fastify) => {
         security: [{ cookieAuth: [] }],
         params: {
           type: "object",
-          properties: { id: { type: "string", format: "uuid" } },
+          properties: { id: { type: "string",  } },
           required: ["id"],
         },
         response: {

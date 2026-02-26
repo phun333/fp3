@@ -48,6 +48,7 @@ export function registerSharedSchemas(app: FastifyInstance) {
       name: { type: "string" },
       role: { type: "string", enum: ["STUDENT", "PROFESSOR"] },
       department: { type: "string" },
+      year: { type: "integer", nullable: true },
       bio: { type: "string", nullable: true },
       avatarUrl: { type: "string", nullable: true },
       emailVerified: { type: "boolean" },

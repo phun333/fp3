@@ -26,7 +26,7 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
             title: { type: "string", minLength: 3 },
             description: { type: "string", minLength: 10 },
             maxMembers: { type: "integer", minimum: 1, default: 3 },
-            tagIds: { type: "array", items: { type: "string", format: "uuid" } },
+            tagIds: { type: "array", items: { type: "string",  } },
           },
         },
         response: {
@@ -170,7 +170,7 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
       description: "Belirtilen projenin detay bilgilerini, tag'lerini, sahibini ve başvurularını döner",
       params: {
         type: "object",
-        properties: { id: { type: "string", format: "uuid" } },
+        properties: { id: { type: "string",  } },
         required: ["id"],
       },
       response: {
@@ -231,7 +231,7 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
         security: [{ cookieAuth: [] }],
         params: {
           type: "object",
-          properties: { id: { type: "string", format: "uuid" } },
+          properties: { id: { type: "string",  } },
           required: ["id"],
         },
         body: {
@@ -241,7 +241,7 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
             description: { type: "string" },
             status: { type: "string", enum: ["OPEN", "IN_PROGRESS", "COMPLETED", "CANCELLED"] },
             maxMembers: { type: "integer" },
-            tagIds: { type: "array", items: { type: "string", format: "uuid" } },
+            tagIds: { type: "array", items: { type: "string",  } },
           },
         },
         response: {
@@ -320,7 +320,7 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
         security: [{ cookieAuth: [] }],
         params: {
           type: "object",
-          properties: { id: { type: "string", format: "uuid" } },
+          properties: { id: { type: "string",  } },
           required: ["id"],
         },
         response: {

@@ -65,7 +65,7 @@ const tagRoutes: FastifyPluginAsync = async (fastify) => {
       description: "Etiketin detayını, ilişkili akademisyenleri, öğrencileri ve projeleri döner",
       params: {
         type: "object",
-        properties: { id: { type: "string", format: "uuid" } },
+        properties: { id: { type: "string",  } },
         required: ["id"],
       },
       response: {
