@@ -10,8 +10,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@fp3/shared-types": "*",
-    "@fp3/validation": "*",
+    "@fp3/shared-types": "workspace:*",
+    "@fp3/validation": "workspace:*",
     "@phosphor-icons/react": "^2.1.0",
     "@tanstack/react-query": "^5.64.0",
     "class-variance-authority": "^0.7.1",
@@ -26,7 +26,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@fp3/config": "*",
+    "@fp3/config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",

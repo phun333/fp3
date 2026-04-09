@@ -11,7 +11,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@fp3/config": "*",
+    "@fp3/config": "workspace:*",
     "typescript": "^5.7.0"
   }
 }

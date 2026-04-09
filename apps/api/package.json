@@ -18,8 +18,8 @@
     "@fastify/cors": "^11.0.0",
     "@fastify/jwt": "^9.0.0",
     "@fastify/swagger": "^9.7.0",
-    "@fp3/shared-types": "*",
-    "@fp3/validation": "*",
+    "@fp3/shared-types": "workspace:*",
+    "@fp3/validation": "workspace:*",
     "@prisma/client": "^6.4.0",
     "@scalar/fastify-api-reference": "^1.44.20",
     "better-auth": "^1.4.18",
@@ -29,7 +29,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@fp3/config": "*",
+    "@fp3/config": "workspace:*",
     "@types/node": "^22.0.0",
     "pg": "^8.18.0",
     "prisma": "^6.4.0",
