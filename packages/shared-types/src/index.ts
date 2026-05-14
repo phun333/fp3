@@ -16,6 +16,23 @@ export enum ApplicationStatus {
   REJECTED = "REJECTED",
 }
 
+export enum TeamIdeaStatus {
+  OPEN = "OPEN",
+  IN_PROGRESS = "IN_PROGRESS",
+  CLOSED = "CLOSED",
+}
+
+export enum TeamInviteRole {
+  PROFESSOR = "PROFESSOR",
+  STUDENT = "STUDENT",
+}
+
+export enum TeamInviteStatus {
+  PENDING = "PENDING",
+  ACCEPTED = "ACCEPTED",
+  DECLINED = "DECLINED",
+}
+
 // ===== Base Types =====
 export interface Tag {
   id: string;
@@ -55,6 +72,40 @@ export interface Project {
   updatedAt: string;
   tags?: ProjectTag[];
   applications?: Application[];
+}
+
+export interface TeamIdea {
+  id: string;
+  title: string;
+  description: string;
+  professorSlots: number;
+  studentSlots: number;
+  status: TeamIdeaStatus;
+  ownerId: string;
+  owner?: User;
+  createdAt: string;
+  updatedAt: string;
+  tags?: TeamIdeaTag[] | Tag[];
+  invites?: TeamInvite[];
+}
+
+export interface TeamIdeaTag {
+  teamIdeaId: string;
+  tagId: string;
+  tag?: Tag;
+}
+
+export interface TeamInvite {
+  id: string;
+  teamIdeaId: string;
+  userId: string;
+  role: TeamInviteRole;
+  status: TeamInviteStatus;
+  handoffNote: string | null;
+  matchScore: number;
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
 }
 
 export interface ProjectTag {

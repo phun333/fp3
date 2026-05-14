@@ -25,6 +25,23 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum TeamIdeaStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum TeamInviteRole {
+  PROFESSOR
+  STUDENT
+}
+
+enum TeamInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
@@ -43,6 +60,8 @@ model User {
   projects      Project[]      @relation("ProjectOwner")
   applications  Application[]  @relation("Applicant")
   publications  Publication[]
+  teamIdeas     TeamIdea[] @relation("TeamIdeaOwner")
+  teamInvites   TeamInvite[] @relation("TeamIdeaInvites")
 
   // Kayıtlı eşleşmeler
   savedMatches    SavedMatch[] @relation("SavedMatches")
@@ -61,6 +80,7 @@ model Tag {
   users        UserTag[]
   projects     ProjectTag[]
   publications PublicationTag[]
+  teamIdeas    TeamIdeaTag[]
 }
 
 model UserTag {
@@ -130,6 +150,48 @@ model Application {
   updatedAt   DateTime          @updatedAt
 
   @@unique([projectId, applicantId])
+}
+
+model TeamIdea {
+  id             String         @id @default(cuid())
+  title          String
+  description    String
+  professorSlots Int            @default(1)
+  studentSlots   Int            @default(3)
+  status         TeamIdeaStatus @default(OPEN)
+  ownerId        String
+  owner          User           @relation("TeamIdeaOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  tags    TeamIdeaTag[]
+  invites TeamInvite[]
+}
+
+model TeamIdeaTag {
+  teamIdeaId String
+  tagId      String
+  teamIdea   TeamIdea @relation(fields: [teamIdeaId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([teamIdeaId, tagId])
+}
+
+model TeamInvite {
+  id           String           @id @default(cuid())
+  teamIdeaId   String
+  userId       String
+  role         TeamInviteRole
+  status       TeamInviteStatus @default(PENDING)
+  handoffNote  String?
+  matchScore   Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  teamIdea TeamIdea @relation(fields: [teamIdeaId], references: [id], onDelete: Cascade)
+  user     User     @relation("TeamIdeaInvites", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamIdeaId, userId])
 }
 
 model SavedMatch {

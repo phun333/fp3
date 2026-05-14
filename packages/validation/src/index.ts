@@ -109,6 +109,29 @@ export const matchPreferencesSchema = z.object({
 
 export type MatchPreferencesInput = z.infer<typeof matchPreferencesSchema>;
 
+export const teamMatchSchema = z.object({
+  title: z.string().min(5, "Fikir başlığı en az 5 karakter olmalıdır").max(200),
+  description: z.string().min(20, "Fikir açıklaması en az 20 karakter olmalıdır").max(5000),
+  professorSlots: z.coerce.number().int().min(1).max(10).default(2),
+  studentSlots: z.coerce.number().int().min(1).max(50).default(10),
+  tagIds: z.array(z.string()).min(1, "En az 1 tag seçmelisiniz").max(10),
+  selectedProfessorIds: z.array(z.string()).max(10).default([]),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export const createTeamIdeaSchema = teamMatchSchema.omit({ limit: true }).extend({
+  professorInvites: z.array(z.object({
+    userId: z.string().min(1),
+    handoffNote: z.string().max(1000).optional(),
+    matchScore: z.number().int().min(0).max(100).default(0),
+  })).max(10).default([]),
+  studentInvites: z.array(z.object({
+    userId: z.string().min(1),
+    handoffNote: z.string().max(1000).optional(),
+    matchScore: z.number().int().min(0).max(100).default(0),
+  })).max(50).default([]),
+});
+
 // ===== Saved Match Schemas =====
 export const saveMatchSchema = z.object({
   professorId: z.string().min(1, "Akademisyen ID gerekli"),
@@ -150,5 +173,7 @@ export type UpdateApplicationStatusInput = z.infer<typeof updateApplicationStatu
 export type PaginationInput = z.infer<typeof paginationSchema>;
 export type SearchInput = z.infer<typeof searchSchema>;
 export type ProjectSearchInput = z.infer<typeof projectSearchSchema>;
+export type TeamMatchInput = z.infer<typeof teamMatchSchema>;
+export type CreateTeamIdeaInput = z.infer<typeof createTeamIdeaSchema>;
 export type AIExtractTagsInput = z.infer<typeof aiExtractTagsSchema>;
 export type AIAnalyzeProfileInput = z.infer<typeof aiAnalyzeProfileSchema>;
