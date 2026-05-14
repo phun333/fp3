@@ -32,6 +32,7 @@ import {
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { ProfessorTeamWizard } from "@/components/professor-team-wizard";
 
 // ─── Steps ───────────────────────────────────────────
 const STEPS = [
@@ -49,18 +50,7 @@ export default function MatchingPage() {
   const { user } = useAuth();
 
   if (user?.role === "PROFESSOR") {
-    return (
-      <div className="max-w-2xl mx-auto text-center py-20">
-        <Users size={64} className="mx-auto text-muted-foreground/40 mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Bu sayfa öğrenciler içindir</h1>
-        <p className="text-muted-foreground">
-          Akademisyen olarak öğrencileri &quot;Keşfet&quot; sayfasından bulabilirsiniz.
-        </p>
-        <Link href="/discover">
-          <Button className="mt-4">Keşfet&apos;e Git</Button>
-        </Link>
-      </div>
-    );
+    return <ProfessorTeamWizard />;
   }
 
   return <MatchingWizard />;

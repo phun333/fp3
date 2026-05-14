@@ -33,6 +33,7 @@ const studentLinks = [
 
 const professorLinks = [
   { href: "/dashboard", label: "Ana Sayfa", icon: House },
+  { href: "/matching", label: "Ekip Kur", icon: Compass },
   { href: "/discover", label: "Keşfet", icon: Compass },
   { href: "/professors", label: "Akademisyenler", icon: Users },
   { href: "/projects", label: "Projeler", icon: Briefcase },

@@ -131,6 +131,31 @@ export const matchingApi = {
     year?: number;
     limit?: number;
   }) => api("/api/match/professors", { method: "POST", body }),
+
+  matchTeam: (body: {
+    title: string;
+    description: string;
+    professorSlots: number;
+    studentSlots: number;
+    tagIds: string[];
+    selectedProfessorIds?: string[];
+    limit?: number;
+  }) => api("/api/match/team", { method: "POST", body }),
+};
+
+// Team Formation API
+export const teamIdeasApi = {
+  create: (body: {
+    title: string;
+    description: string;
+    professorSlots: number;
+    studentSlots: number;
+    tagIds: string[];
+    selectedProfessorIds?: string[];
+    professorInvites?: { userId: string; handoffNote?: string; matchScore?: number }[];
+    studentInvites?: { userId: string; handoffNote?: string; matchScore?: number }[];
+  }) => api("/api/team-ideas", { method: "POST", body }),
+  my: () => api("/api/team-ideas/my"),
 };
 
 // Saved Matches API
