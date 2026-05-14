@@ -18,6 +18,7 @@ import discoverRoutes from "./routes/discover";
 import aiRoutes from "./routes/ai";
 import matchingRoutes from "./routes/matching";
 import savedMatchRoutes from "./routes/saved-matches";
+import teamIdeaRoutes from "./routes/team-ideas";
 
 const app = Fastify({
   logger: true,
@@ -86,6 +87,7 @@ app.register(discoverRoutes);
 app.register(aiRoutes);
 app.register(matchingRoutes);
 app.register(savedMatchRoutes);
+app.register(teamIdeaRoutes);
 
 // Global error handler
 app.setErrorHandler((error: any, request, reply) => {
