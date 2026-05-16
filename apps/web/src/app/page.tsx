@@ -355,7 +355,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen bg-white text-slate-900 selection:bg-indigo-200">
       {/* Fonts */}
-      <style jsx global>{`
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 

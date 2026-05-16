@@ -6,7 +6,7 @@
     "dev": "cross-env NEXT_IGNORE_INCORRECT_LOCKFILE=1 next dev --port 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

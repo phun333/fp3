@@ -73,17 +73,17 @@ pnpm install
 # apps/api/.env
 DATABASE_URL="postgresql://user:pass@host:5432/fp3"
 BETTER_AUTH_SECRET="random-secret-key"
-BETTER_AUTH_URL="http://localhost:4000"
+BETTER_AUTH_URL="http://localhost:4100"
 JWT_SECRET="random-jwt-secret"
 AI_SERVICE_URL="http://localhost:5001"
 CORS_ORIGINS="http://localhost:3000"
 
 # apps/web/.env.local
-NEXT_PUBLIC_API_URL="http://localhost:4000"
+NEXT_PUBLIC_API_URL="http://localhost:4100"
 
 # apps/ai-service/.env
 DATABASE_URL="postgresql://..."
-CORS_ORIGINS="http://localhost:4000,http://localhost:3000"
+CORS_ORIGINS="http://localhost:4100,http://localhost:3000"
 ```
 
 ### 3. Database Setup
@@ -101,7 +101,7 @@ pnpm prisma:studio      # Prisma Studio aç
 pnpm dev
 
 # Ayrı ayrı başlat
-pnpm dev:api            # API (port 4000)
+pnpm dev:api            # API (port 4100)
 pnpm dev:web            # Web (port 3000)
 pnpm dev:mobile         # Mobile (Expo)
 
@@ -312,7 +312,7 @@ cd apps/api && pnpm prisma:generate
 
 ### Port çakışması
 - Web: 3000
-- API: 4000
+- API: 4100
 - AI Service: 5001
 
 ---
@@ -321,4 +321,4 @@ cd apps/api && pnpm prisma:generate
 
 - [fp3-project-plan.md](./fp3-project-plan.md) - Detaylı proje planı ve fazlar
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Katkı rehberi
-- API Docs: `http://localhost:4000/docs` (Scalar UI)
+- API Docs: `http://localhost:4100/docs` (Scalar UI)
