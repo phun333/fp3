@@ -265,6 +265,122 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
+  // GET /api/applications/incoming — projelerime gelen başvurular (PROFESSOR)
+  fastify.get(
+    "/api/applications/incoming",
+    {
+      preHandler: requireRole("PROFESSOR"),
+      schema: {
+        tags: ["Başvurular"],
+        summary: "Projelerime gelen başvurular",
+        description: "Hocanın sahibi olduğu tüm projelere gelen başvuruları döner",
+        security: [{ cookieAuth: [] }],
+        querystring: {
+          type: "object",
+          properties: {
+            page: { type: "integer", default: 1 },
+            limit: { type: "integer", default: 20 },
+            status: { type: "string", enum: ["PENDING", "ACCEPTED", "REJECTED"] },
+          },
+        },
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              success: { type: "boolean" },
+              data: { type: "array", items: { $ref: "Application#" } },
+              meta: { $ref: "PaginationMeta#" },
+              counts: {
+                type: "object",
+                properties: {
+                  total: { type: "integer" },
+                  pending: { type: "integer" },
+                  accepted: { type: "integer" },
+                  rejected: { type: "integer" },
+                },
+              },
+            },
+          },
+          400: { $ref: "ApiError#" },
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = paginationSchema.safeParse(request.query);
+      if (!parsed.success) {
+        return reply.status(400).send({ success: false, error: parsed.error.errors[0].message });
+      }
+
+      const { status } = request.query as { status?: "PENDING" | "ACCEPTED" | "REJECTED" };
+      const { page, limit } = parsed.data;
+
+      const where = {
+        project: { ownerId: request.user!.id },
+        ...(status ? { status } : {}),
+      };
+
+      const [total, applications, statusCounts] = await Promise.all([
+        prisma.application.count({ where }),
+        prisma.application.findMany({
+          where,
+          ...paginationArgs(page, limit),
+          include: {
+            project: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                tags: { include: { tag: true } },
+              },
+            },
+            applicant: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                department: true,
+                year: true,
+                bio: true,
+                avatarUrl: true,
+                tags: { include: { tag: true } },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.application.groupBy({
+          by: ["status"],
+          where: { project: { ownerId: request.user!.id } },
+          _count: { _all: true },
+        }),
+      ]);
+
+      const counts = {
+        total: statusCounts.reduce((sum, s) => sum + s._count._all, 0),
+        pending: statusCounts.find((s) => s.status === "PENDING")?._count._all ?? 0,
+        accepted: statusCounts.find((s) => s.status === "ACCEPTED")?._count._all ?? 0,
+        rejected: statusCounts.find((s) => s.status === "REJECTED")?._count._all ?? 0,
+      };
+
+      return {
+        success: true,
+        data: applications.map((app) => ({
+          ...app,
+          project: {
+            ...app.project,
+            tags: app.project.tags.map((pt) => pt.tag),
+          },
+          applicant: {
+            ...app.applicant,
+            tags: app.applicant.tags.map((ut) => ut.tag),
+          },
+        })),
+        meta: paginationMeta(total, page, limit),
+        counts,
+      };
+    }
+  );
+
   // GET /api/my-applications — kendi başvurularım (STUDENT)
   fastify.get(
     "/api/my-applications",

@@ -46,11 +46,24 @@ const profileRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.status(404).send({ success: false, error: "Kullanıcı bulunamadı" });
       }
 
+      // Hocalar için "applications" sayısı, projelerine GELEN başvurular olmalı
+      // (User.applications relation'ı "Applicant" tarafı — hocalar için her zaman 0)
+      let applicationsCount = user._count.applications;
+      if (user.role === "PROFESSOR") {
+        applicationsCount = await prisma.application.count({
+          where: { project: { ownerId: user.id } },
+        });
+      }
+
       return {
         success: true,
         data: {
           ...user,
           tags: user.tags.map((ut) => ut.tag),
+          _count: {
+            ...user._count,
+            applications: applicationsCount,
+          },
         },
       };
     }
