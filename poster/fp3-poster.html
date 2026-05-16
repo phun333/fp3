@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FP3 Poster — 70x100 cm</title>
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css">
+  <style>
+    @page { size: 70cm 100cm; margin: 0; }
+    * { box-sizing: border-box; }
+
+    :root {
+      --maroon: #760f1c;
+      --maroon-dark: #4f0710;
+      --ink: #111827;
+      --muted: #475569;
+      --line: #ccd6e3;
+      --paper: #f4f7fb;
+      --blue: #2563eb;
+      --green: #059669;
+      --amber: #d97706;
+      --violet: #6d28d9;
+    }
+
+    html, body {
+      margin: 0;
+      width: 70cm;
+      min-height: 100cm;
+      background: #d7dde6;
+      font-family: "Aptos", "Segoe UI", Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .poster {
+      width: 70cm;
+      height: 100cm;
+      padding: 1cm;
+      background:
+        radial-gradient(circle at 10% 5%, rgba(118,15,28,.13), transparent 17cm),
+        radial-gradient(circle at 90% 60%, rgba(37,99,235,.10), transparent 18cm),
+        linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
+      overflow: hidden;
+    }
+
+    .content {
+      height: 98cm;
+      display: grid;
+      grid-template-rows: 10.5cm 12.5cm 15.5cm 34cm 12.5cm 9cm;
+      gap: .8cm;
+    }
+
+    .header {
+      border-radius: .55cm;
+      padding: .8cm 1.05cm;
+      color: white;
+      display: grid;
+      grid-template-columns: 4.7cm 1fr 12.5cm;
+      gap: .85cm;
+      align-items: center;
+      background:
+        radial-gradient(circle at 85% 20%, rgba(255,255,255,.18), transparent 7cm),
+        linear-gradient(135deg, var(--maroon-dark), var(--maroon) 58%, #3d0710);
+      box-shadow: 0 .28cm 1cm rgba(17,24,39,.22);
+    }
+
+    .logo {
+      height: 4.2cm;
+      border-right: 1px solid rgba(255,255,255,.32);
+      display: grid;
+      place-items: center;
+      padding-right: .75cm;
+    }
+    .logo i { font-size: 3.2cm; }
+
+    h1 {
+      margin: 0;
+      font-size: 1.35cm;
+      line-height: 1.04;
+      letter-spacing: -.045em;
+      font-weight: 900;
+    }
+    .subtitle {
+      margin: .2cm 0 0;
+      font-size: .7cm;
+      line-height: 1.12;
+      color: rgba(255,255,255,.88);
+      font-weight: 600;
+    }
+    .uni {
+      margin-top: .43cm;
+      padding-top: .35cm;
+      border-top: 1px solid rgba(255,255,255,.26);
+      font-size: .42cm;
+      color: rgba(255,255,255,.78);
+      font-weight: 600;
+    }
+
+    .header-meta {
+      border-radius: .38cm;
+      border: 1px solid rgba(255,255,255,.24);
+      background: rgba(255,255,255,.10);
+      padding: .45cm;
+      display: grid;
+      gap: .28cm;
+    }
+    .meta-row {
+      display: grid;
+      grid-template-columns: .7cm 1fr;
+      gap: .22cm;
+      align-items: center;
+      font-size: .33cm;
+      color: rgba(255,255,255,.76);
+    }
+    .meta-row i { font-size: .48cm; color: white; }
+    .meta-row strong { display: block; color: white; font-size: .38cm; line-height: 1.12; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: .8cm; }
+    .three-col { display: grid; grid-template-columns: 1.05fr 1fr .95fr; gap: .8cm; }
+    .arch-grid { display: grid; grid-template-columns: 1.18fr .82fr; gap: .8cm; }
+
+    .card {
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--line);
+      border-radius: .45cm;
+      padding: .62cm;
+      box-shadow: 0 .18cm .65cm rgba(17,24,39,.09);
+      overflow: hidden;
+    }
+    .card.dark { background: #111827; border-color: #111827; color: white; }
+    .card.dark p, .card.dark li { color: rgba(255,255,255,.78); }
+
+    .section-title {
+      margin: 0 0 .45cm;
+      display: flex;
+      align-items: center;
+      gap: .28cm;
+      color: var(--maroon);
+      font-size: .72cm;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -.025em;
+    }
+    .section-title i {
+      width: 1.12cm;
+      height: 1.12cm;
+      display: grid;
+      place-items: center;
+      border-radius: .28cm;
+      color: var(--maroon);
+      background: #fff1f2;
+      box-shadow: inset 0 0 0 1px #fecdd3;
+      font-size: .62cm;
+      flex: 0 0 auto;
+    }
+    .card.dark .section-title { color: white; }
+    .card.dark .section-title i { color: white; background: rgba(255,255,255,.12); box-shadow: none; }
+
+    p { margin: 0; font-size: .44cm; line-height: 1.34; color: #263241; }
+    ul { margin: 0; padding-left: .62cm; font-size: .43cm; line-height: 1.31; color: #263241; }
+    li { margin: .13cm 0; }
+    strong { color: #111827; }
+    .card.dark strong { color: white; }
+
+    .icon-text {
+      display: grid;
+      grid-template-columns: 2.25cm 1fr;
+      gap: .45cm;
+      align-items: start;
+    }
+    .big-icon {
+      width: 1.95cm;
+      height: 1.95cm;
+      border-radius: .38cm;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, white, #eef2f7);
+      border: 1px solid #d6deea;
+      box-shadow: 0 .12cm .35cm rgba(15,23,42,.12);
+    }
+    .big-icon i { font-size: 1.02cm; color: #172033; }
+    .pills { display: flex; flex-wrap: wrap; gap: .16cm; margin-top: .36cm; }
+    .pill {
+      padding: .13cm .3cm;
+      border-radius: 99px;
+      background: #fff1f2;
+      color: #6d0b17;
+      border: 1px solid #fecdd3;
+      font-size: .31cm;
+      font-weight: 900;
+    }
+
+    .layers { display: grid; gap: .28cm; }
+    .layer {
+      min-height: 2.35cm;
+      display: grid;
+      grid-template-columns: 5.8cm 1fr;
+      align-items: center;
+      gap: .4cm;
+      padding: .36cm .48cm;
+      border-radius: .34cm;
+      border: 1px solid;
+      font-size: .48cm;
+      font-weight: 900;
+    }
+    .layer i { font-size: .72cm; vertical-align: middle; margin-right: .18cm; }
+    .layer span:last-child { text-align: center; font-size: .5cm; }
+    .layer small { display: block; margin-top: .06cm; font-size: .29cm; color: var(--muted); font-weight: 700; }
+    .client { background: #eff6ff; border-color: #93c5fd; }
+    .api { background: #ecfdf5; border-color: #86efac; }
+    .service { background: #fff7ed; border-color: #fdba74; }
+    .data { background: #f1f5f9; border-color: #cbd5e1; }
+
+    .flowchart { height: 12.6cm; display: grid; grid-template-rows: repeat(4, 1fr); gap: .35cm; }
+    .flow-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .25cm; align-items: stretch; }
+    .flow-row.single { grid-template-columns: 1fr; }
+    .node {
+      border: 1px solid #cbd5e1;
+      background: white;
+      border-radius: .28cm;
+      padding: .28cm;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-size: .34cm;
+      line-height: 1.15;
+      font-weight: 900;
+    }
+    .node.blue { background: #eef2ff; border-color: #a5b4fc; color: #3730a3; }
+    .node.green { background: #ecfdf5; border-color: #86efac; color: #065f46; }
+    .node.amber { background: #fff7ed; border-color: #fdba74; color: #92400e; }
+    .node.red { background: #fff1f2; border-color: #fecdd3; color: #760f1c; }
+
+    .screens-card { padding: .62cm; }
+    .screens {
+      height: 31.8cm;
+      display: grid;
+      grid-template-columns: 1fr 1fr 9.2cm 9.2cm;
+      grid-template-rows: 15.45cm 15.45cm;
+      gap: .45cm;
+    }
+    .screen {
+      position: relative;
+      margin: 0;
+      overflow: hidden;
+      border-radius: .42cm;
+      border: 1px solid #b9c6d8;
+      background: white;
+      box-shadow: 0 .18cm .65cm rgba(15,23,42,.12);
+    }
+    .screen.web { grid-column: span 1; }
+    .screen.mobile { grid-row: span 1; }
+    .screen img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .caption {
+      position: absolute;
+      left: .32cm;
+      right: .32cm;
+      bottom: .28cm;
+      min-height: 1cm;
+      padding: .18cm .32cm;
+      border-radius: .24cm;
+      color: white;
+      background: rgba(17,24,39,.84);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .2cm;
+      font-size: .39cm;
+      font-weight: 900;
+    }
+    .caption i { font-size: .58cm; }
+
+    .steps { display: grid; grid-template-columns: 1fr 1fr; gap: .45cm; }
+    .step-col-title { margin: 0 0 .24cm; font-size: .42cm; font-weight: 900; color: #111827; }
+    .step-list { display: grid; gap: .18cm; }
+    .step {
+      display: grid;
+      grid-template-columns: .76cm 1fr;
+      gap: .22cm;
+      align-items: start;
+      padding: .2cm;
+      border: 1px solid #dce4ee;
+      border-radius: .25cm;
+      background: #f8fafc;
+    }
+    .step-no { width: .62cm; height: .62cm; border-radius: 99px; display: grid; place-items: center; background: var(--maroon); color: white; font-size: .29cm; font-weight: 900; }
+    .step strong { display: block; font-size: .34cm; line-height: 1.05; }
+    .step span { display: block; margin-top: .05cm; color: var(--muted); font-size: .3cm; line-height: 1.18; }
+
+    .formula {
+      display: grid;
+      gap: .25cm;
+    }
+    .formula-code {
+      background: #111827;
+      color: white;
+      border-radius: .32cm;
+      padding: .36cm;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .36cm;
+      line-height: 1.44;
+    }
+    .bar { display: grid; grid-template-columns: 3.6cm 1fr .85cm; gap: .22cm; align-items: center; font-size: .32cm; font-weight: 900; }
+    .track { height: .24cm; border-radius: 99px; background: #e5e7eb; overflow: hidden; }
+    .fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #f59e0b, #ef4444); }
+
+    .tech-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .24cm; }
+    .tech {
+      min-height: 2.1cm;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: .22cm;
+      border: 1px solid #dce4ee;
+      border-radius: .3cm;
+      background: white;
+      font-size: .34cm;
+      font-weight: 900;
+    }
+    .tech i { display: block; font-size: .78cm; margin-bottom: .08cm; color: #172033; }
+
+    .footer {
+      border-radius: .5cm;
+      padding: .55cm .75cm;
+      background: linear-gradient(135deg, var(--maroon-dark), var(--maroon) 58%, #430711);
+      color: white;
+      display: grid;
+      grid-template-columns: 13.2cm 1fr 9.2cm;
+      gap: .75cm;
+      align-items: center;
+      box-shadow: 0 .25cm .8cm rgba(17,24,39,.18);
+    }
+    .footer h3 { margin: 0 0 .28cm; font-size: .55cm; line-height: 1; }
+    .advisor, .team { border-right: 1px solid rgba(255,255,255,.28); padding-right: .65cm; }
+    .person { display: grid; grid-template-columns: 1.6cm 1fr; gap: .28cm; align-items: center; }
+    .people { display: grid; grid-template-columns: 1fr 1fr; gap: .42cm; }
+    .photo {
+      width: 1.6cm; height: 1.6cm; border-radius: 50%;
+      display: grid; place-items: center;
+      border: 2px dashed rgba(255,255,255,.55);
+      background: rgba(255,255,255,.16);
+      font-size: .25cm; font-weight: 900; color: rgba(255,255,255,.72);
+    }
+    .person strong { display: block; color: white; font-size: .38cm; line-height: 1.05; }
+    .person span { display: block; color: rgba(255,255,255,.72); font-size: .3cm; line-height: 1.16; margin-top: .06cm; }
+    .qr-block { display: grid; grid-template-columns: 2.8cm 1fr; gap: .35cm; align-items: center; }
+    .qr { width: 2.8cm; height: 2.8cm; background: white; border-radius: .25cm; overflow: hidden; }
+    .qr img { width: 100%; height: 100%; object-fit: cover; }
+    .qr-copy strong { color: white; display: block; font-size: .45cm; }
+    .qr-copy span { color: rgba(255,255,255,.72); display: block; margin-top: .1cm; font-size: .3cm; line-height: 1.18; }
+  </style>
+</head>
+<body>
+  <main class="poster">
+    <div class="content">
+      <header class="header">
+        <div class="logo"><i class="ph-duotone ph-network"></i></div>
+        <div>
+          <h1>Academic Research Collaboration Platform</h1>
+          <p class="subtitle">AI-Assisted Student–Professor Matching & Team Formation System</p>
+          <div class="uni">OSTIM Technical University — Computer Engineering, Graduation Project, 2026</div>
+        </div>
+        <aside class="header-meta">
+          <div class="meta-row"><i class="ph-bold ph-calendar-dots"></i><span>Poster Presentation<strong>May 21, 2026</strong></span></div>
+          <div class="meta-row"><i class="ph-bold ph-user-circle-gear"></i><span>Advisor<strong>[Advisor Name]</strong></span></div>
+          <div class="meta-row"><i class="ph-bold ph-users-three"></i><span>Team<strong>[Student 1] • [Student 2]</strong></span></div>
+          <div class="meta-row"><i class="ph-bold ph-github-logo"></i><span>Repository<strong>github.com/[repo]</strong></span></div>
+        </aside>
+      </header>
+
+      <section class="two-col">
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-magnifying-glass"></i>Problem Definition</h2>
+          <div class="icon-text">
+            <div class="big-icon"><i class="ph-duotone ph-link-break"></i></div>
+            <div>
+              <ul>
+                <li>Students cannot easily find professors whose research areas match their interests.</li>
+                <li>Professors need a structured way to discover students and academic partners.</li>
+                <li>Projects, publication ideas and team opportunities are scattered across informal channels.</li>
+                <li>There is no central skill/tag-based discovery and collaboration workflow.</li>
+              </ul>
+              <div class="pills"><span class="pill">Manual search</span><span class="pill">Low visibility</span><span class="pill">Missed collaboration</span></div>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-target"></i>Project Objectives</h2>
+          <div class="icon-text">
+            <div class="big-icon"><i class="ph-duotone ph-rocket-launch"></i></div>
+            <div>
+              <ul>
+                <li>Build a university-only platform using <strong>@ostimteknik.edu.tr</strong> authentication.</li>
+                <li>Match students with professors for <strong>projects</strong> and <strong>publications</strong>.</li>
+                <li>Recommend open projects based on student profile tags and interests.</li>
+                <li>Enable professor-led teams such as <strong>2 professors + 10 students</strong>.</li>
+              </ul>
+              <div class="pills"><span class="pill">Tag matching</span><span class="pill">Project applications</span><span class="pill">Team invites</span></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="arch-grid">
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-stack"></i>System Architecture</h2>
+          <div class="layers">
+            <div class="layer client"><span><i class="ph-bold ph-monitor"></i>Client Layer</span><span>Next.js Web App • Expo Mobile App<small>dashboards, onboarding wizards, discovery screens</small></span></div>
+            <div class="layer api"><span><i class="ph-bold ph-plugs-connected"></i>API Layer</span><span>Fastify REST API<small>auth, profiles, projects, matching, team routes</small></span></div>
+            <div class="layer service"><span><i class="ph-bold ph-cpu"></i>Service Layer</span><span>Prisma ORM • FastAPI AI Service<small>business logic, validation, KeyBERT tag suggestions</small></span></div>
+            <div class="layer data"><span><i class="ph-bold ph-database"></i>Data Layer</span><span>PostgreSQL • Tag Cache<small>users, tags, projects, publications, invites</small></span></div>
+          </div>
+        </article>
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-git-branch"></i>Context Flow</h2>
+          <div class="flowchart">
+            <div class="flow-row"><div class="node blue">Student<br/>tags</div><div class="node blue">Professor<br/>areas</div><div class="node blue">Project<br/>tags</div></div>
+            <div class="flow-row"><div class="node green">Auth</div><div class="node green">Matching<br/>Engine</div><div class="node green">AI Tag<br/>Suggestion</div></div>
+            <div class="flow-row"><div class="node amber">Ranked<br/>Professors</div><div class="node amber">Open<br/>Projects</div><div class="node amber">Mixed<br/>Teams</div></div>
+            <div class="flow-row single"><div class="node red">Applications • Saved Matches • Team Invites</div></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="three-col">
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-path"></i>Onboarding Processes</h2>
+          <div class="steps">
+            <div>
+              <p class="step-col-title">Student Flow</p>
+              <div class="step-list">
+                <div class="step"><div class="step-no">1</div><div><strong>Purpose</strong><span>Article or project</span></div></div>
+                <div class="step"><div class="step-no">2</div><div><strong>Description</strong><span>Idea and expectations</span></div></div>
+                <div class="step"><div class="step-no">3</div><div><strong>Tags</strong><span>Interest areas</span></div></div>
+                <div class="step"><div class="step-no">4</div><div><strong>Results</strong><span>Professors/projects</span></div></div>
+              </div>
+            </div>
+            <div>
+              <p class="step-col-title">Professor Flow</p>
+              <div class="step-list">
+                <div class="step"><div class="step-no">1</div><div><strong>Idea</strong><span>Research scope</span></div></div>
+                <div class="step"><div class="step-no">2</div><div><strong>Slots</strong><span>Professors + students</span></div></div>
+                <div class="step"><div class="step-no">3</div><div><strong>Handoff</strong><span>Invite professors</span></div></div>
+                <div class="step"><div class="step-no">4</div><div><strong>Team</strong><span>Select students</span></div></div>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-function"></i>Matching Algorithm</h2>
+          <div class="formula">
+            <div class="formula-code">Student → Professor<br/>score = .60×tag + .25×purpose + .15×activity<br/><br/>Professor → Team<br/>score = .70×tag + .20×activity + .10×department</div>
+            <div class="bar"><span>Tag overlap</span><div class="track"><div class="fill" style="width:70%"></div></div><span>70%</span></div>
+            <div class="bar"><span>Purpose / activity</span><div class="track"><div class="fill" style="width:25%"></div></div><span>25%</span></div>
+            <div class="bar"><span>Department bonus</span><div class="track"><div class="fill" style="width:10%"></div></div><span>10%</span></div>
+          </div>
+        </article>
+        <article class="card dark">
+          <h2 class="section-title"><i class="ph-duotone ph-sparkle"></i>Key Contribution</h2>
+          <p>FP3 turns academic collaboration into a structured discovery process. Students find relevant supervisors, professors find compatible students, and research ideas become actionable mixed teams.</p>
+          <ul style="margin-top:.35cm;">
+            <li><strong>4</strong> discovery surfaces</li>
+            <li><strong>2</strong> onboarding flows</li>
+            <li><strong>35+</strong> research tags</li>
+            <li><strong>1</strong> central collaboration platform</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="card screens-card">
+        <h2 class="section-title"><i class="ph-duotone ph-images-square"></i>System Screenshots</h2>
+        <div class="screens">
+          <figure class="screen web"><img src="https://placehold.co/900x620/f8fafc/760f1c?text=WEB+01%0ALanding+%2F+Auth" alt="Landing screenshot"><figcaption class="caption"><span>Landing / Auth</span><i class="ph-bold ph-monitor"></i></figcaption></figure>
+          <figure class="screen web"><img src="https://placehold.co/900x620/f8fafc/760f1c?text=WEB+02%0AStudent+Matching" alt="Student matching screenshot"><figcaption class="caption"><span>Student Matching</span><i class="ph-bold ph-path"></i></figcaption></figure>
+          <figure class="screen mobile"><img src="https://placehold.co/430x900/f8fafc/760f1c?text=MOBILE+01%0ADashboard" alt="Mobile dashboard"><figcaption class="caption"><span>Mobile Dashboard</span><i class="ph-bold ph-device-mobile"></i></figcaption></figure>
+          <figure class="screen mobile"><img src="https://placehold.co/430x900/f8fafc/760f1c?text=MOBILE+02%0AMatching" alt="Mobile matching"><figcaption class="caption"><span>Mobile Matching</span><i class="ph-bold ph-device-mobile-camera"></i></figcaption></figure>
+          <figure class="screen web"><img src="https://placehold.co/900x620/f8fafc/760f1c?text=WEB+03%0AProject+Discovery" alt="Project discovery screenshot"><figcaption class="caption"><span>Project Discovery</span><i class="ph-bold ph-briefcase"></i></figcaption></figure>
+          <figure class="screen web"><img src="https://placehold.co/900x620/f8fafc/760f1c?text=WEB+04%0AProfessor+Team+Builder" alt="Team builder screenshot"><figcaption class="caption"><span>Professor Team Builder</span><i class="ph-bold ph-users-three"></i></figcaption></figure>
+        </div>
+      </section>
+
+      <section class="three-col">
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-circles-three-plus"></i>Core Modules</h2>
+          <div class="flowchart" style="height:9.4cm;grid-template-rows:repeat(3,1fr);">
+            <div class="flow-row"><div class="node blue">Auth</div><div class="node blue">Profile</div><div class="node blue">Tags</div></div>
+            <div class="flow-row"><div class="node green">Projects</div><div class="node green">Publications</div><div class="node green">Applications</div></div>
+            <div class="flow-row"><div class="node amber">Discover</div><div class="node amber">Saved Match</div><div class="node amber">Team Ideas</div></div>
+          </div>
+        </article>
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-code"></i>Key Technologies</h2>
+          <div class="tech-grid">
+            <div class="tech"><i class="ph-bold ph-globe"></i>Next.js</div><div class="tech"><i class="ph-bold ph-device-mobile"></i>Expo</div><div class="tech"><i class="ph-bold ph-lightning"></i>Fastify</div><div class="tech"><i class="ph-bold ph-database"></i>Prisma</div>
+            <div class="tech"><i class="ph-bold ph-cylinder"></i>PostgreSQL</div><div class="tech"><i class="ph-bold ph-shield-check"></i>Better Auth</div><div class="tech"><i class="ph-bold ph-brain"></i>KeyBERT</div><div class="tech"><i class="ph-bold ph-tree-structure"></i>TurboRepo</div>
+          </div>
+        </article>
+        <article class="card">
+          <h2 class="section-title"><i class="ph-duotone ph-check-circle"></i>Evaluation Points</h2>
+          <ul>
+            <li>Domain-restricted university authentication.</li>
+            <li>Profile and tag-based recommendation data.</li>
+            <li>Student → professor and project results.</li>
+            <li>Professor-led team formation with handoff notes.</li>
+            <li>Clean monorepo software architecture.</li>
+          </ul>
+        </article>
+      </section>
+
+      <footer class="footer">
+        <section class="advisor">
+          <h3>Project Advisor</h3>
+          <div class="person"><div class="photo">PHOTO</div><div><strong>[Advisor Name]</strong><span>Advisor / Department<br/>Ostim Technical University</span></div></div>
+        </section>
+        <section class="team">
+          <h3>Team Members</h3>
+          <div class="people">
+            <div class="person"><div class="photo">PHOTO</div><div><strong>[Student 1 Name]</strong><span>Role: Full-stack, Backend, Matching</span></div></div>
+            <div class="person"><div class="photo">PHOTO</div><div><strong>[Student 2 Name]</strong><span>Role: Frontend, UI, Testing</span></div></div>
+          </div>
+        </section>
+        <section class="qr-block">
+          <div class="qr"><img src="https://placehold.co/320x320/ffffff/760f1c?text=GitHub%0AQR" alt="GitHub QR"></div>
+          <div class="qr-copy"><strong>GitHub / Demo</strong><span>Replace with repository or live demo QR code before printing.</span></div>
+        </section>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>

@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
-    "clean-ports": "lsof -ti:3000,4000,5001 | xargs kill -9 2>/dev/null || true",
+    "clean-ports": "lsof -ti:3000,3100,4000,4100,5001,8081 | xargs kill -9 2>/dev/null || true",
     "dev:fresh": "pnpm clean-ports && turbo run dev",
     "dev:web": "turbo run dev --filter=@fp3/web",
     "dev:api": "turbo run dev --filter=@fp3/api",
@@ -14,8 +14,9 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
-    "turbo": "^2.4.0",
-    "prettier": "^3.4.0"
+    "playwright": "^1.60.0",
+    "prettier": "^3.4.0",
+    "turbo": "^2.4.0"
   },
   "packageManager": "pnpm@9.15.4",
   "overrides": {
