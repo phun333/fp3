@@ -17,6 +17,7 @@ import {
   ClipboardText,
   FolderOpen,
   BookmarkSimple,
+  Tray,
 } from "@phosphor-icons/react";
 
 const studentLinks = [
@@ -37,6 +38,7 @@ const professorLinks = [
   { href: "/discover", label: "Keşfet", icon: Compass },
   { href: "/projects", label: "Projeler", icon: Briefcase },
   { href: "/my-projects", label: "Projelerim", icon: FolderOpen },
+  { href: "/incoming-applications", label: "Gelen Başvurular", icon: Tray },
   { href: "/publications", label: "Yayınlar", icon: BookOpen },
   { href: "/professors", label: "Akademisyenler", icon: Users },
   { href: "/profile", label: "Profilim", icon: UserCircle },

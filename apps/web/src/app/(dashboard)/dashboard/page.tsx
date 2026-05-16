@@ -295,6 +295,14 @@ const profQuickNav: QuickNavItem[] = [
     bgColor: "bg-amber-100 dark:bg-amber-950/50",
   },
   {
+    href: "/incoming-applications",
+    label: "Gelen Başvurular",
+    description: "Öğrenci başvurularını incele",
+    icon: ClipboardText,
+    color: "text-sky-600",
+    bgColor: "bg-sky-100 dark:bg-sky-950/50",
+  },
+  {
     href: "/professors",
     label: "Akademisyenler",
     description: "Diğer akademisyenleri gör",
@@ -449,7 +457,20 @@ function ProfessorDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard icon={Briefcase} label="Projelerim" value={stats.projects || 0} />
         <StatCard icon={BookOpen} label="Yayınlarım" value={stats.publications || 0} />
-        <StatCard icon={ClipboardText} label="Gelen Başvuru" value={stats.applications || 0} />
+        <Link href="/incoming-applications" className="block group">
+          <Card className="group-hover:border-primary/40 group-hover:shadow-md transition-all">
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <ClipboardText size={20} weight="duotone" className="text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-2xl font-bold">{stats.applications || 0}</p>
+                <p className="text-sm text-muted-foreground">Gelen Başvuru</p>
+              </div>
+              <ArrowRight size={16} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Onboarding */}

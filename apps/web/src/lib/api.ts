@@ -104,6 +104,8 @@ export const applicationsApi = {
     api(`/api/applications/${id}`, { method: "PUT", body: { status } }),
   myApplications: (params?: string) =>
     api(`/api/my-applications${params ? `?${params}` : ""}`),
+  incoming: (params?: string) =>
+    api(`/api/applications/incoming${params ? `?${params}` : ""}`),
 };
 
 // Tags API

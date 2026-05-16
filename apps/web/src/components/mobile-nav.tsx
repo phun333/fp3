@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   List,
   House,
@@ -17,6 +17,7 @@ import {
   SignOut,
   GraduationCap,
   BookmarkSimple,
+  Tray,
 } from "@phosphor-icons/react";
 import { useState } from "react";
 
@@ -37,6 +38,7 @@ const professorLinks = [
   { href: "/discover", label: "Keşfet", icon: Compass },
   { href: "/professors", label: "Akademisyenler", icon: Users },
   { href: "/projects", label: "Projeler", icon: Briefcase },
+  { href: "/incoming-applications", label: "Gelen Başvurular", icon: Tray },
   { href: "/publications", label: "Yayınlar", icon: BookOpen },
   { href: "/profile", label: "Profilim", icon: UserCircle },
 ];
@@ -60,6 +62,7 @@ export function MobileNav() {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
+          <SheetTitle className="sr-only">Navigasyon Menüsü</SheetTitle>
           <div className="flex h-14 items-center gap-2 border-b px-6">
             <GraduationCap size={24} weight="duotone" className="text-primary" />
             <span className="font-bold">FP3</span>
