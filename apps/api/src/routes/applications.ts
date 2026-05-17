@@ -9,15 +9,15 @@ import {
 import { paginationMeta, paginationArgs } from "../lib/pagination";
 
 const applicationRoutes: FastifyPluginAsync = async (fastify) => {
-  // POST /api/projects/:id/apply — projeye başvur (sadece STUDENT)
+  // POST /api/projects/:id/apply — projeye başvur (öğrenci veya hoca)
   fastify.post(
     "/api/projects/:id/apply",
     {
-      preHandler: requireRole("STUDENT"),
+      preHandler: requireAuth,
       schema: {
         tags: ["Başvurular"],
         summary: "Projeye başvur",
-        description: "Sadece STUDENT rolündeki kullanıcılar başvurabilir. Aynı projeye birden fazla başvuru yapılamaz",
+        description: "Hem öğrenciler hem hocalar başvurabilir. Aynı projeye birden fazla başvuru yapılamaz",
         security: [{ cookieAuth: [] }],
         params: {
           type: "object",
@@ -68,7 +68,11 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.status(400).send({ success: false, error: "Bu proje başvuruya kapalı" });
       }
 
-      // Zaten başvurmuş mu
+      if (project.ownerId === request.user!.id) {
+        return reply.status(400).send({ success: false, error: "Kendi projenize başvuramazsınız" });
+      }
+
+      // Zaten başvurmuş mu — REJECTED ise yeniden başvuruya izin ver (PENDING'e döndür)
       const existing = await prisma.application.findUnique({
         where: {
           projectId_applicantId: {
@@ -79,7 +83,31 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (existing) {
-        return reply.status(409).send({ success: false, error: "Bu projeye zaten başvurdunuz" });
+        if (existing.status === "PENDING") {
+          return reply.status(409).send({
+            success: false,
+            error: "Bu projeye zaten başvurdunuz, hocanın yanıtını bekleyin",
+          });
+        }
+        if (existing.status === "ACCEPTED") {
+          return reply.status(409).send({
+            success: false,
+            error: "Bu projenin zaten üyesisiniz",
+          });
+        }
+        // REJECTED: kaydı PENDING'e döndür, yeni mesajla güncelle
+        const reapplied = await prisma.application.update({
+          where: { id: existing.id },
+          data: {
+            status: "PENDING",
+            message: parsed.data.message,
+          },
+          include: {
+            project: { select: { id: true, title: true } },
+            applicant: { select: { id: true, name: true, department: true } },
+          },
+        });
+        return { success: true, data: reapplied };
       }
 
       const application = await prisma.application.create({
@@ -241,7 +269,12 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
 
       const application = await prisma.application.findUnique({
         where: { id },
-        include: { project: true },
+        include: {
+          project: {
+            include: { members: { select: { role: true } } },
+          },
+          applicant: { select: { id: true, role: true } },
+        },
       });
 
       if (!application) {
@@ -252,13 +285,72 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.status(403).send({ success: false, error: "Bu başvuruyu güncelleme yetkiniz yok" });
       }
 
-      const updated = await prisma.application.update({
-        where: { id },
-        data: { status: parsed.data.status },
-        include: {
-          project: { select: { id: true, title: true } },
-          applicant: { select: { id: true, name: true, department: true } },
-        },
+      const newStatus = parsed.data.status;
+
+      // ACCEPTED'a alıyorsak: kontenjan kontrol + ProjectMember insert (transaction)
+      if (newStatus === "ACCEPTED" && application.status !== "ACCEPTED") {
+        const role = application.applicant.role;
+        const slotsField = role === "STUDENT" ? "studentSlots" : "professorSlots";
+        const currentCount = application.project.members.filter((m) => m.role === role).length;
+        const capacity = application.project[slotsField];
+
+        if (currentCount >= capacity) {
+          return reply.status(400).send({
+            success: false,
+            error: `${role === "STUDENT" ? "Öğrenci" : "Hoca"} kontenjanı dolu`,
+          });
+        }
+
+        const updated = await prisma.$transaction(async (tx) => {
+          const app = await tx.application.update({
+            where: { id },
+            data: { status: "ACCEPTED" },
+            include: {
+              project: { select: { id: true, title: true } },
+              applicant: { select: { id: true, name: true, department: true } },
+            },
+          });
+          // Üyelik zaten varsa skip et
+          await tx.projectMember.upsert({
+            where: {
+              projectId_userId: {
+                projectId: application.projectId,
+                userId: application.applicantId,
+              },
+            },
+            create: {
+              projectId: application.projectId,
+              userId: application.applicantId,
+              role,
+            },
+            update: {},
+          });
+          return app;
+        });
+
+        return { success: true, data: updated };
+      }
+
+      // REJECTED'a geçiş veya başka bir durum: sadece application güncelle.
+      // ACCEPTED → REJECTED ise üyeliği de kaldır.
+      const updated = await prisma.$transaction(async (tx) => {
+        const app = await tx.application.update({
+          where: { id },
+          data: { status: newStatus },
+          include: {
+            project: { select: { id: true, title: true } },
+            applicant: { select: { id: true, name: true, department: true } },
+          },
+        });
+        if (application.status === "ACCEPTED" && newStatus === "REJECTED") {
+          await tx.projectMember.deleteMany({
+            where: {
+              projectId: application.projectId,
+              userId: application.applicantId,
+            },
+          });
+        }
+        return app;
       });
 
       return { success: true, data: updated };
@@ -381,11 +473,11 @@ const applicationRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
-  // GET /api/my-applications — kendi başvurularım (STUDENT)
+  // GET /api/my-applications — kendi başvurularım (öğrenci veya hoca)
   fastify.get(
     "/api/my-applications",
     {
-      preHandler: requireRole("STUDENT"),
+      preHandler: requireAuth,
       schema: {
         tags: ["Başvurular"],
         summary: "Kendi başvurularım",
