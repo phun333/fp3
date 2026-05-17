@@ -7,6 +7,7 @@ import psycopg2
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from sentence_transformers import SentenceTransformer
 from keybert import KeyBERT
@@ -76,10 +77,44 @@ async def lifespan(app: FastAPI):
 # ==================
 # FastAPI App
 # ==================
+AI_API_DESCRIPTION = """
+FP3 platformunun semantik tag öneri servisi.
+
+**Mimari**
+- Bu servis FP3'ün AI katmanıdır ve genelde Fastify API (`localhost:3001`)
+  tarafından proxy edilir. UI'dan doğrudan çağrılmaz.
+- [`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) embedding modeli
+- [`KeyBERT`](https://github.com/MaartenGr/KeyBERT) keyword çıkarımı için
+
+**Algoritma**
+1. KeyBERT ile metinden anahtar kelimeler çıkarılır
+2. Metin + her keyword ayrı ayrı embed edilir
+3. Postgres'ten cache'lenmiş tag embedding'leri ile cosine similarity hesaplanır
+4. Tag başına maksimum benzerlik alınır (ortalama yerine, spesifik keyword'leri yakalamak için)
+5. `confidence >= 0.35` olanlar dönülür
+
+**Port**: 3002 (FP3 port standardı; `apps/api/.env` üzerinden `AI_SERVICE_URL` ile baġlıdır).
+"""
+
+tags_metadata = [
+    {
+        "name": "Sistem",
+        "description": "Sağlık kontrolü, model durumu, cache yönetimi.",
+    },
+    {
+        "name": "AI",
+        "description": "Tag öneri ve profil analizi servisleri.",
+    },
+]
+
 app = FastAPI(
-    title="FP3 AI Tag Service",
+    title="FP3 AI Service",
+    description=AI_API_DESCRIPTION,
     version="1.0.0",
     lifespan=lifespan,
+    openapi_tags=tags_metadata,
+    docs_url=None,           # default Swagger UI'ı kapat
+    redoc_url="/redoc",      # ReDoc'a sağlam yedek
 )
 
 app.add_middleware(
@@ -91,35 +126,100 @@ app.add_middleware(
 )
 
 
+# Fastify API ile aynı "Scalar" tarzı docs UI — /docs altında servis edilir
+SCALAR_HTML = """<!doctype html>
+<html>
+  <head>
+    <title>FP3 AI Service — API Docs</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <script id="api-reference" data-url="/openapi.json"></script>
+    <script>
+      var configuration = { theme: 'purple', layout: 'modern' };
+      document.getElementById('api-reference').dataset.configuration = JSON.stringify(configuration);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  </body>
+</html>"""
+
+
+@app.get("/docs", include_in_schema=False, response_class=HTMLResponse)
+async def scalar_docs():
+    return HTMLResponse(SCALAR_HTML)
+
+
 # ==================
 # Pydantic Models
 # ==================
 class ExtractTagsRequest(BaseModel):
-    text: str = Field(..., min_length=10, max_length=10000)
-    top_n: int = Field(default=5, ge=1, le=20)
+    text: str = Field(
+        ...,
+        min_length=10,
+        max_length=10000,
+        description="Tag önerisi üretilecek metin (proje açıklaması, makale özeti, bio vb).",
+        examples=["Transformer-based NLP for Turkish sentiment analysis"],
+    )
+    top_n: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Döndürülecek maksimum tag sayısı.",
+    )
 
 
 class AnalyzeProfileRequest(BaseModel):
-    bio: str = Field(..., min_length=10, max_length=5000)
-    publications: list[str] = Field(default=[])
+    bio: str = Field(
+        ...,
+        min_length=10,
+        max_length=5000,
+        description="Kullanıcı biyografisi.",
+    )
+    publications: list[str] = Field(
+        default=[],
+        description="Opsiyonel: yayın başlık/özet listesi (ek baġlam için).",
+    )
 
 
 class SuggestedTag(BaseModel):
-    tag_id: str
-    tag_name: str
-    category: Optional[str] = None
-    confidence: float
+    tag_id: str = Field(..., description="Postgres'teki Tag.id")
+    tag_name: str = Field(..., description="Tag görünen adı")
+    category: Optional[str] = Field(None, description="Tag kategorisi (AI/ML, Web, ...)")
+    confidence: float = Field(
+        ...,
+        ge=0,
+        le=1,
+        description="Cosine similarity skoru (0–1).  >=0.7 güçlü, 0.55–0.7 orta, <0.55 zayıf.",
+    )
 
 
 class ExtractTagsResponse(BaseModel):
     suggested_tags: list[SuggestedTag]
-    keywords: list[str]
+    keywords: list[str] = Field(
+        ...,
+        description="KeyBERT tarafından çıkarılan ham keyword'ler (debug/görünürlük için).",
+    )
 
 
 class AnalyzeProfileResponse(BaseModel):
     suggested_tags: list[SuggestedTag]
-    research_areas: list[str]
+    research_areas: list[str] = Field(
+        ...,
+        description="Önerilen tag'lerin kategorilerinden türetilen araştırma alanı özeti.",
+    )
     keywords: list[str]
+
+
+class HealthResponse(BaseModel):
+    status: str = Field(..., examples=["ok"])
+    model_loaded: bool
+    tags_loaded: int = Field(..., description="Cache'te bulunan tag sayısı.")
+
+
+class ReloadTagsResponse(BaseModel):
+    success: bool
+    message: str
 
 
 # ==================
@@ -141,19 +241,33 @@ def extract_keywords(text: str, top_n: int = 10) -> list[str]:
     return [kw[0] for kw in keywords]
 
 
-def match_tags(text: str, top_n: int = 5, threshold: float = 0.4) -> list[SuggestedTag]:
-    """Metin embedding'ini tag embedding'leriyle eşleştir"""
+def match_tags(
+    text: str,
+    top_n: int = 5,
+    threshold: float = 0.35,
+    keywords: Optional[list[str]] = None,
+) -> list[SuggestedTag]:
+    """Metin (ve varsa keyword'ler) embedding'lerini tag embedding'leriyle
+    eşleştir. Her tag için tüm sorguların maksimum benzerliğini alırız;
+    böylece uzun bir açıklamada kısa keyword'lerle yakalanan özgül tag'ler
+    de eşleşir (ortalama almak yerine en iyi sinyali tutarız)."""
     if not model or tag_embeddings is None or len(tag_cache) == 0:
         return []
 
-    text_embedding = model.encode([text], convert_to_numpy=True)
+    queries = [text]
+    if keywords:
+        # Sadece yeterli uzunluktaki anlamlı keyword'leri ekle
+        queries.extend([k for k in keywords if len(k) >= 3])
 
-    # Cosine similarity
-    similarities = np.dot(tag_embeddings, text_embedding.T).flatten()
+    query_embeddings = model.encode(queries, convert_to_numpy=True)
 
-    # Threshold üzerindeki tag'leri al
+    # Cosine similarity matrisi: (n_tags, n_queries)
+    sim_matrix = np.dot(tag_embeddings, query_embeddings.T)
+    # Her tag için queries üzerinden max benzerlik
+    best_per_tag = sim_matrix.max(axis=1)
+
     results = []
-    for idx, score in enumerate(similarities):
+    for idx, score in enumerate(best_per_tag):
         if score >= threshold:
             tag = tag_cache[idx]
             results.append(
@@ -165,7 +279,6 @@ def match_tags(text: str, top_n: int = 5, threshold: float = 0.4) -> list[Sugges
                 )
             )
 
-    # Skora göre sırala ve top_n kadar döndür
     results.sort(key=lambda x: x.confidence, reverse=True)
     return results[:top_n]
 
@@ -173,8 +286,14 @@ def match_tags(text: str, top_n: int = 5, threshold: float = 0.4) -> list[Sugges
 # ==================
 # Endpoints
 # ==================
-@app.get("/health")
+@app.get(
+    "/health",
+    tags=["Sistem"],
+    summary="Servis sağlık kontrolü",
+    response_model=HealthResponse,
+)
 async def health():
+    """Yküleme göstergesi (deploy/proxy health-check'leri için basit)."""
     return {
         "status": "ok",
         "model_loaded": model is not None,
@@ -182,8 +301,14 @@ async def health():
     }
 
 
-@app.get("/api/ai/health")
+@app.get(
+    "/api/ai/health",
+    tags=["Sistem"],
+    summary="AI servisi sağlık durumu",
+    response_model=HealthResponse,
+)
 async def ai_health():
+    """Fastify API'nin proxy'lediġi sağlık endpoint'i. `/health` ile aynı çıktı."""
     return {
         "status": "ok",
         "model_loaded": model is not None,
@@ -191,18 +316,34 @@ async def ai_health():
     }
 
 
-@app.post("/api/ai/extract-tags", response_model=ExtractTagsResponse)
+@app.post(
+    "/api/ai/extract-tags",
+    tags=["AI"],
+    summary="Metinden tag öner",
+    response_model=ExtractTagsResponse,
+    responses={
+        503: {"description": "Model henüz hazır değil (startup tamamlanmadı)"},
+    },
+)
 async def extract_tags(req: ExtractTagsRequest):
-    """Metin'den tag önerisi çıkar"""
+    """Verilen metinden semantik tag önerileri üretir.
+
+    UI'da `AiTagSuggestions` component'i bu endpoint'i Fastify proxy'si
+    (`POST /api/ai/suggest-tags`) üzerinden çağırır. Sahalar:
+
+    - **Proje oluşturma** (`/projects/new`) → başlık + açıklama
+    - **Yayın ekleme** (`/publications/new`) → başlık + özet
+    - **Profil bio** (`/profile`) → bio (≥5 cmle/20 char)
+    - **Ekip kurma wizard** (`/matching` — hoca) → fikir metni
+
+    Çıktaki `confidence` skoru kullanıcıya **"Güçlü / Orta / Zayıf"** rozeti
+    olarak gösterilir.
+    """
     if not model or not kw_model:
         raise HTTPException(status_code=503, detail="Model henüz yüklenmedi")
 
-    # 1. KeyBERT ile keyword çıkar
     keywords = extract_keywords(req.text, top_n=10)
-
-    # 2. Metin + keyword'leri birleştirerek tag eşleştir
-    combined = req.text + " " + " ".join(keywords)
-    suggested_tags = match_tags(combined, top_n=req.top_n)
+    suggested_tags = match_tags(req.text, top_n=req.top_n, keywords=keywords)
 
     return ExtractTagsResponse(
         suggested_tags=suggested_tags,
@@ -210,9 +351,24 @@ async def extract_tags(req: ExtractTagsRequest):
     )
 
 
-@app.post("/api/ai/analyze-profile", response_model=AnalyzeProfileResponse)
+@app.post(
+    "/api/ai/analyze-profile",
+    tags=["AI"],
+    summary="Bio + yayın özetlerinden profil analizi",
+    response_model=AnalyzeProfileResponse,
+    responses={
+        503: {"description": "Model henüz hazır değil"},
+    },
+)
 async def analyze_profile(req: AnalyzeProfileRequest):
-    """Profil bilgilerinden tag ve araştırma alanı öner"""
+    """Bio + yayın listesi alıp **ilgi alanı önerisi + araştırma alanları** üretir.
+
+    `/api/ai/extract-tags`'ten farkı:
+    - Birden çok metni birleştirir (bio + publication özetleri)
+    - Çıktıda `research_areas` (tag kategorilerinden türetilen ana araştırma
+      alanları) da döner — profil sayfasında "Araştırma Alanlarınız" rozetleri
+      için kullanılabilir.
+    """
     if not model or not kw_model:
         raise HTTPException(status_code=503, detail="Model henüz yüklenmedi")
 
@@ -223,8 +379,8 @@ async def analyze_profile(req: AnalyzeProfileRequest):
     # Keyword çıkar
     keywords = extract_keywords(combined_text, top_n=15)
 
-    # Tag eşleştir
-    suggested_tags = match_tags(combined_text, top_n=10)
+    # Tag eşleştir (metin + keyword'ler kombine, tag başına max benzerlik)
+    suggested_tags = match_tags(combined_text, top_n=10, keywords=keywords)
 
     # Araştırma alanları: en yüksek skorlu tag kategorilerini al
     areas: list[str] = []
@@ -244,9 +400,18 @@ async def analyze_profile(req: AnalyzeProfileRequest):
     )
 
 
-@app.post("/api/ai/reload-tags")
+@app.post(
+    "/api/ai/reload-tags",
+    tags=["Sistem"],
+    summary="Tag cache'i yenile",
+    response_model=ReloadTagsResponse,
+)
 async def reload_tags():
-    """Tag cache'ini yenile"""
+    """DB'deki Tag tablosundan etiketleri yeniden okuyup embedding cache'ini günceller.
+
+    Yeni tag eklendiyse (örn. admin paneli veya seed sonrası) bu çağrılmalı,
+    yoksa AI önerileri stale tag listesi üzerinden çalışır.
+    """
     load_tags_from_db()
     return {
         "success": True,
@@ -257,4 +422,5 @@ async def reload_tags():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=5001, reload=True)
+    port = int(os.getenv("PORT", "3002"))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
