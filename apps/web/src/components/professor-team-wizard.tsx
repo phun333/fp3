@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { matchingApi, professorsApi, profileApi, tagsApi, teamIdeasApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,8 @@ export function ProfessorTeamWizard() {
   const [handoffNotes, setHandoffNotes] = useState<Record<string, string>>({});
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [createdIdeaId, setCreatedIdeaId] = useState<string | null>(null);
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile"],
@@ -138,7 +141,14 @@ export function ProfessorTeamWizard() {
         })),
       });
     },
-    onSuccess: (data: any) => setCreatedIdeaId(data?.data?.id || "created"),
+    onSuccess: (data: any) => {
+      setCreatedIdeaId(data?.data?.id || "created");
+      setCreatedProjectId(data?.data?.projectId || data?.data?.project?.id || null);
+      // İlgili list'lerin cache'ini tazele
+      queryClient.invalidateQueries({ queryKey: ["my-projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["team-ideas"] });
+    },
   });
 
   const groupedTags = tagsData?.data?.grouped || {};
@@ -324,7 +334,7 @@ export function ProfessorTeamWizard() {
             </div>
           )}
 
-          {step === "results" && <ResultsPanel data={matchMutation.data?.data} selectedProfessorIds={selectedProfessorIds} selectedStudentIds={selectedStudentIds} studentSlots={studentSlots} onToggleStudent={toggleStudent} onCreate={() => createMutation.mutate()} creating={createMutation.isPending} createdIdeaId={createdIdeaId} />}
+          {step === "results" && <ResultsPanel data={matchMutation.data?.data} selectedProfessorIds={selectedProfessorIds} selectedStudentIds={selectedStudentIds} studentSlots={studentSlots} onToggleStudent={toggleStudent} onCreate={() => createMutation.mutate()} creating={createMutation.isPending} createdIdeaId={createdIdeaId} createdProjectId={createdProjectId} />}
         </CardContent>
       </Card>
 
@@ -404,7 +414,7 @@ function CandidateCard({ candidate, selected, onToggle }: { candidate: Candidate
   );
 }
 
-function ResultsPanel({ data, selectedStudentIds, studentSlots, onToggleStudent, onCreate, creating, createdIdeaId }: { data: any; selectedProfessorIds: string[]; selectedStudentIds: string[]; studentSlots: number; onToggleStudent: (candidate: Candidate) => void; onCreate: () => void; creating: boolean; createdIdeaId: string | null }) {
+function ResultsPanel({ data, selectedStudentIds, studentSlots, onToggleStudent, onCreate, creating, createdIdeaId, createdProjectId }: { data: any; selectedProfessorIds: string[]; selectedStudentIds: string[]; studentSlots: number; onToggleStudent: (candidate: Candidate) => void; onCreate: () => void; creating: boolean; createdIdeaId: string | null; createdProjectId: string | null }) {
   const professors: Candidate[] = [...(data?.selectedProfessors || []), ...(data?.recommendedProfessors || [])];
   const students: Candidate[] = data?.recommendedStudents || [];
 
@@ -412,9 +422,32 @@ function ResultsPanel({ data, selectedStudentIds, studentSlots, onToggleStudent,
     <div className="space-y-7">
       <StepTitle icon={<ClipboardText size={28} weight="duotone" />} title="Ekip taslağı hazır" description="Hocalar seçildi; şimdi önerilen öğrencilerden kontenjan kadarını ekibe dahil edebilirsin." />
       {createdIdeaId && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-          <p className="font-semibold">Ekip fikri kaydedildi.</p>
-          <p className="text-sm">Seçtiğin hoca/öğrenci davetleri beklemede olarak oluşturuldu.</p>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 space-y-3">
+          <div>
+            <p className="font-semibold flex items-center gap-2">
+              <CheckCircle size={18} weight="fill" />
+              Proje oluşturuldu ve davetler gönderildi
+            </p>
+            <p className="text-sm mt-1">
+              Proje artık <strong>Projelerim</strong>'de görünüyor. Davet edilen herkes
+              kendi <strong>Gelen Kutusu → Davetlerim</strong> sekmesinden cevap verebilir.
+              Sen de proje detayından davetlerin durumunu takip edebilirsin.
+            </p>
+          </div>
+          {createdProjectId && (
+            <div className="flex flex-wrap gap-2">
+              <Link href={`/projects/${createdProjectId}`}>
+                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  Projeyi Aç <ArrowRight size={14} className="ml-1" />
+                </Button>
+              </Link>
+              <Link href="/my-projects">
+                <Button size="sm" variant="outline" className="bg-white">
+                  Projelerim
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       )}
       <div>

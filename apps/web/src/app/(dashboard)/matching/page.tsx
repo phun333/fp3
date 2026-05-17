@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/auth-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { profileApi, matchingApi, tagsApi, savedMatchesApi, applicationsApi } from "@/lib/api";
+import { profileApi, matchingApi, tagsApi, savedMatchesApi, applicationsApi, professorApplicationsApi } from "@/lib/api";
 import { TagBadge } from "@/components/tag-badge";
 import { MatchScore } from "@/components/match-score";
 import { Card, CardContent } from "@/components/ui/card";
@@ -566,6 +566,7 @@ function MatchingWizard() {
                   rank={index + 1}
                   purpose={purpose!}
                   description={description}
+                  selectedTagIds={selectedTags}
                   isSaved={savedProfIds.has(prof.id)}
                   onSavedChange={() => queryClient.invalidateQueries({ queryKey: ["saved-match-ids"] })}
                 />
@@ -619,6 +620,7 @@ function ProfessorMatchCard({
   rank,
   purpose,
   description,
+  selectedTagIds,
   isSaved,
   onSavedChange,
 }: {
@@ -626,6 +628,7 @@ function ProfessorMatchCard({
   rank: number;
   purpose: "ARTICLE" | "PROJECT";
   description: string;
+  selectedTagIds: string[];
   isSaved: boolean;
   onSavedChange: () => void;
 }) {
@@ -634,6 +637,12 @@ function ProfessorMatchCard({
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [appliedProjects, setAppliedProjects] = useState<Set<string>>(new Set());
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Hocaya direkt başvuru (yeni proje önerisi)
+  const [showProfModal, setShowProfModal] = useState(false);
+  const [profTitle, setProfTitle] = useState("");
+  const [profMessage, setProfMessage] = useState("");
+  const [profSubmitted, setProfSubmitted] = useState(false);
 
   const initials = (professor.name || "")
     .split(" ")
@@ -675,6 +684,28 @@ function ProfessorMatchCard({
         purpose,
       }),
     onSuccess: () => onSavedChange(),
+  });
+
+  // Hocaya direkt başvuru (proje önerisi)
+  const profApplyMutation = useMutation({
+    mutationFn: () =>
+      professorApplicationsApi.send({
+        professorId: professor.id,
+        purpose,
+        title: profTitle.trim(),
+        description: description || profTitle.trim(),
+        tagIds: selectedTagIds,
+        message: profMessage || undefined,
+      }),
+    onSuccess: () => {
+      setProfSubmitted(true);
+      setTimeout(() => {
+        setShowProfModal(false);
+        setProfSubmitted(false);
+        setProfTitle("");
+        setProfMessage("");
+      }, 1200);
+    },
   });
 
   // Projeye başvur mutation
@@ -874,6 +905,23 @@ function ProfessorMatchCard({
               </Button>
             )}
 
+            <Button
+              size="sm"
+              variant="default"
+              className="flex-1 gap-2"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setProfTitle(
+                  description?.slice(0, 60) || "Yeni proje önerisi"
+                );
+                setShowProfModal(true);
+              }}
+            >
+              <PaperPlaneTilt size={16} />
+              Hocaya Başvur
+            </Button>
+
             <Link href={`/professors/${professor.id}`} className="flex-shrink-0">
               <Button variant="ghost" size="sm">
                 <ArrowRight size={16} />
@@ -928,6 +976,79 @@ function ProfessorMatchCard({
                 >
                   <PaperPlaneTilt size={16} />
                   {applyMutation.isPending ? "Gönderiliyor..." : "Başvur"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Hocaya direkt başvuru modal */}
+      {showProfModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={(e) => { e.stopPropagation(); setShowProfModal(false); }}
+        >
+          <Card className="w-full max-w-md mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">Hocaya Başvur</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {professor.name}'a proje önerisi gönder. Kabul edilirse otomatik bir proje oluşur ve sen üye olarak eklenirsin.
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Proje Başlığı</label>
+                <input
+                  type="text"
+                  className="mt-1.5 w-full rounded-lg border bg-background px-3 py-2 text-sm"
+                  value={profTitle}
+                  onChange={(e) => setProfTitle(e.target.value)}
+                  placeholder="Ör: Türkçe NLP üzerine bitirme projesi"
+                  minLength={5}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">
+                  Mesaj <span className="text-muted-foreground font-normal">(opsiyonel)</span>
+                </label>
+                <Textarea
+                  value={profMessage}
+                  onChange={(e) => setProfMessage(e.target.value)}
+                  rows={3}
+                  placeholder="Kendinizi tanıtın, neden bu hocayla çalışmak istediğinizi belirtin..."
+                  className="mt-1.5"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Açıklama olarak eşleştirme adımındaki "{description?.slice(0, 80)}..." metni kullanılacak. Tag'ler:{" "}
+                {selectedTagIds.length} adet.
+              </p>
+              {profApplyMutation.isError && (
+                <p className="text-sm text-destructive">
+                  {(profApplyMutation.error as any)?.message || "Gönderilemedi"}
+                </p>
+              )}
+              {profSubmitted && (
+                <p className="text-sm text-emerald-600 font-medium">
+                  ✓ Başvuru gönderildi
+                </p>
+              )}
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setShowProfModal(false)}>
+                  İptal
+                </Button>
+                <Button
+                  onClick={() => profApplyMutation.mutate()}
+                  disabled={
+                    profApplyMutation.isPending ||
+                    profTitle.trim().length < 5 ||
+                    selectedTagIds.length === 0
+                  }
+                  className="gap-2"
+                >
+                  <PaperPlaneTilt size={16} />
+                  {profApplyMutation.isPending ? "Gönderiliyor..." : "Gönder"}
                 </Button>
               </div>
             </CardContent>

@@ -18,7 +18,8 @@ export default function NewProjectPage() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    maxMembers: 3,
+    studentSlots: 2,
+    professorSlots: 1,
   });
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [error, setError] = useState("");
@@ -85,17 +86,34 @@ export default function NewProjectPage() {
                 rows={5}
               />
             </div>
-            <div className="space-y-2">
-              <Label>Maksimum Üye Sayısı</Label>
-              <Input
-                type="number"
-                min={1}
-                max={20}
-                value={form.maxMembers}
-                onChange={(e) =>
-                  setForm({ ...form, maxMembers: Number(e.target.value) })
-                }
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Hoca Kontenjanı</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={form.professorSlots}
+                  onChange={(e) =>
+                    setForm({ ...form, professorSlots: Number(e.target.value) })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Projeyi açan hoca dahildir.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label>Öğrenci Kontenjanı</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={20}
+                  value={form.studentSlots}
+                  onChange={(e) =>
+                    setForm({ ...form, studentSlots: Number(e.target.value) })
+                  }
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>İlgili Tag&apos;ler</Label>
