@@ -204,44 +204,113 @@ const teamIdeaRoutes: FastifyPluginAsync = async (fastify) => {
         : [];
       const validMap = new Map(validInvitees.map((u) => [u.id, u.role]));
 
-      const teamIdea = await prisma.teamIdea.create({
-        data: {
-          title,
-          description,
-          professorSlots,
-          studentSlots,
-          ownerId: request.user!.id,
-          tags: { create: tagIds.map((tagId) => ({ tagId })) },
-          invites: {
-            create: usersToInvite
-              .filter((invite) => validMap.has(invite.userId))
-              .map((invite) => ({
+      const validInvites = usersToInvite.filter((invite) =>
+        validMap.has(invite.userId)
+      );
+
+      // Hem TeamIdea (planlama / analiz kaydı) hem de gerçek Project + ProjectInvite oluştur
+      // Böylece proje /my-projects'te görünür, davet edilenler /incoming-applications -> Davetlerim'de görür.
+      const result = await prisma.$transaction(async (tx) => {
+        const teamIdea = await tx.teamIdea.create({
+          data: {
+            title,
+            description,
+            professorSlots,
+            studentSlots,
+            ownerId: request.user!.id,
+            tags: { create: tagIds.map((tagId) => ({ tagId })) },
+            invites: {
+              create: validInvites.map((invite) => ({
                 userId: invite.userId,
                 role: validMap.get(invite.userId)!,
                 handoffNote: invite.handoffNote,
                 matchScore: invite.matchScore,
               })),
+            },
           },
-        },
-        include: {
-          tags: { include: { tag: true } },
-          owner: { select: { id: true, name: true, email: true, department: true } },
-          invites: {
-            include: {
-              user: {
-                select: { id: true, name: true, email: true, role: true, department: true, avatarUrl: true },
+          include: {
+            tags: { include: { tag: true } },
+            owner: {
+              select: { id: true, name: true, email: true, department: true },
+            },
+            invites: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    department: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+              orderBy: { createdAt: "asc" },
+            },
+          },
+        });
+
+        const project = await tx.project.create({
+          data: {
+            title,
+            description,
+            ownerId: request.user!.id,
+            studentSlots,
+            professorSlots,
+            tags: { create: tagIds.map((tagId) => ({ tagId })) },
+            members: {
+              create: { userId: request.user!.id, role: "PROFESSOR" },
+            },
+            invites: {
+              create: validInvites.map((invite) => ({
+                userId: invite.userId,
+                inviterId: request.user!.id,
+                invitedRole: validMap.get(invite.userId)!,
+                message: invite.handoffNote ?? null,
+              })),
+            },
+          },
+          include: {
+            tags: { include: { tag: true } },
+            owner: {
+              select: { id: true, name: true, department: true, avatarUrl: true },
+            },
+            members: {
+              include: {
+                user: { select: { id: true, name: true, role: true } },
               },
             },
-            orderBy: { createdAt: "asc" },
+            invites: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    role: true,
+                    department: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+              orderBy: { createdAt: "asc" },
+            },
           },
-        },
+        });
+
+        return { teamIdea, project };
       });
 
       return {
         success: true,
         data: {
-          ...teamIdea,
-          tags: teamIdea.tags.map((tt) => tt.tag),
+          ...result.teamIdea,
+          tags: result.teamIdea.tags.map((tt) => tt.tag),
+          projectId: result.project.id,
+          project: {
+            ...result.project,
+            tags: result.project.tags.map((pt) => pt.tag),
+          },
         },
       };
     }
