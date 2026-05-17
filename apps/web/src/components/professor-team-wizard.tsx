@@ -15,7 +15,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { MatchScore } from "@/components/match-score";
 import { TagBadge } from "@/components/tag-badge";
-import { AiTagSuggestions } from "@/components/ai-tag-suggestions";
 import {
   ArrowLeft,
   ArrowRight,
@@ -284,16 +283,6 @@ export function ProfessorTeamWizard() {
           {step === "tags" && (
             <div className="space-y-6">
               <StepTitle icon={<Sparkle size={28} weight="duotone" />} title="Eşleşme alanlarını seç" description="En fazla 10 tag seç. Profilindeki tag'ler otomatik gelir; fikre göre düzenleyebilirsin." />
-              <AiTagSuggestions
-                text={`${title}\n\n${description}`}
-                selectedTagIds={selectedTags}
-                onAdd={(id) => {
-                  if (!selectedTags.includes(id) && selectedTags.length < 10) {
-                    setSelectedTags([...selectedTags, id]);
-                  }
-                }}
-                description="Proje fikrinden uygun tag’leri AI öneriyor."
-              />
               <div className="space-y-5 max-h-[520px] overflow-y-auto pr-2">
                 {Object.entries(groupedTags).map(([category, tags]: [string, any]) => (
                   <div key={category}>
