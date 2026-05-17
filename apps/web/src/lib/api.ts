@@ -1,5 +1,5 @@
-// Next.js rewrites ile proxy: /api/* → localhost:4000/api/*
-// Bu sayede cookie'ler aynı origin'den gelir (SameSite=Lax çalışır)
+// API'ye dorudan bağlanıyoruz (localhost:3001). CORS + credentials: "include"
+// ile cookie'ler iletilir.
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface ApiOptions {

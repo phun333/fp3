@@ -19,10 +19,10 @@ function resolveApiUrl(): string {
   if (hostUri && typeof hostUri === "string") {
     const host = hostUri.split(":")[0];
     if (host && host !== "localhost") {
-      return `http://${host}:4100`;
+      return `http://${host}:3001`;
     }
   }
-  return "http://localhost:4100";
+  return "http://localhost:3001";
 }
 
 export const API_URL = resolveApiUrl();

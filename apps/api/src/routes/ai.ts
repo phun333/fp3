@@ -2,7 +2,8 @@ import { FastifyPluginAsync } from "fastify";
 import { requireAuth } from "../middleware/auth";
 import { aiExtractTagsSchema, aiAnalyzeProfileSchema } from "@fp3/validation";
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:5000";
+// FP3 port standardı: AI servisi 3002'de çalışır.
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:3002";
 
 const aiRoutes: FastifyPluginAsync = async (fastify) => {
   // POST /api/ai/suggest-tags — AI tag önerisi (proxy)

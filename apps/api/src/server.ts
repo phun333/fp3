@@ -130,7 +130,7 @@ app.setErrorHandler((error: any, request, reply) => {
 // Start server
 const start = async () => {
   try {
-    const port = Number(process.env.PORT) || 4000;
+    const port = Number(process.env.PORT) || 3001;
     await app.listen({ port, host: "0.0.0.0" });
     console.log(`🚀 FP3 API running on http://localhost:${port}`);
   } catch (err) {
