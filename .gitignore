@@ -73,3 +73,6 @@ coverage/
 .vercel/
 .cache/
 *.bak
+
+# Personal setup notes (paylaşmak istemediğin yerel kurulum rehberi)
+setup.md
