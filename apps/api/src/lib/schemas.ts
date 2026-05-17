@@ -62,7 +62,8 @@ export function registerSharedSchemas(app: FastifyInstance) {
     },
   });
 
-  // Project şeması
+  // Project şeması (Swagger dokümantasyonu için;
+  // response serialization circular ref nedeniyle bazı GET endpoint'lerinde kullanılmıyor)
   app.addSchema({
     $id: "Project",
     type: "object",
@@ -71,7 +72,8 @@ export function registerSharedSchemas(app: FastifyInstance) {
       title: { type: "string" },
       description: { type: "string" },
       status: { type: "string", enum: ["OPEN", "IN_PROGRESS", "CLOSED"] },
-      maxMembers: { type: "number" },
+      studentSlots: { type: "number" },
+      professorSlots: { type: "number" },
       ownerId: { type: "string" },
       createdAt: { type: "string", format: "date-time" },
       updatedAt: { type: "string", format: "date-time" },

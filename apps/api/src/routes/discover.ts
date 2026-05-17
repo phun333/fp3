@@ -119,14 +119,6 @@ const discoverRoutes: FastifyPluginAsync = async (fastify) => {
           },
         },
         response: {
-          200: {
-            type: "object",
-            properties: {
-              success: { type: "boolean" },
-              data: { type: "array", items: { $ref: "Project#" } },
-              meta: { $ref: "PaginationMeta#" },
-            },
-          },
           400: { $ref: "ApiError#" },
         },
       },

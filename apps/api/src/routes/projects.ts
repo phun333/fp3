@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from "fastify";
 import { prisma } from "../lib/prisma";
-import { requireAuth, requireRole } from "../middleware/auth";
+import { requireAuth, requireRole, getSession } from "../middleware/auth";
 import {
   createProjectSchema,
   updateProjectSchema,
@@ -9,6 +9,56 @@ import {
 import { paginationMeta, paginationArgs } from "../lib/pagination";
 
 const projectRoutes: FastifyPluginAsync = async (fastify) => {
+  // GET /api/my-projects — sahibi olduğum + üyesi olduğum projeler
+  fastify.get(
+    "/api/my-projects",
+    {
+      preHandler: requireAuth,
+      schema: {
+        tags: ["Projeler"],
+        summary: "Projelerim",
+        description: "Sahibi veya üyesi olduğum projeler",
+        security: [{ cookieAuth: [] }],
+      },
+    },
+    async (request) => {
+      const userId = request.user!.id;
+      const projects = await prisma.project.findMany({
+        where: {
+          OR: [{ ownerId: userId }, { members: { some: { userId } } }],
+        },
+        include: {
+          tags: { include: { tag: true } },
+          owner: {
+            select: { id: true, name: true, department: true, avatarUrl: true },
+          },
+          members: {
+            include: {
+              user: { select: { id: true, name: true, role: true } },
+            },
+          },
+          _count: {
+            select: {
+              applications: true,
+              members: true,
+              invites: { where: { status: "PENDING" } },
+            },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+      });
+
+      return {
+        success: true,
+        data: projects.map((p) => ({
+          ...p,
+          tags: p.tags.map((pt) => pt.tag),
+          isOwner: p.ownerId === userId,
+        })),
+      };
+    }
+  );
+
   // POST /api/projects — yeni proje oluştur (sadece PROFESSOR)
   fastify.post(
     "/api/projects",
@@ -25,8 +75,9 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
           properties: {
             title: { type: "string", minLength: 3 },
             description: { type: "string", minLength: 10 },
-            maxMembers: { type: "integer", minimum: 1, default: 3 },
-            tagIds: { type: "array", items: { type: "string",  } },
+            studentSlots: { type: "integer", minimum: 0, default: 2 },
+            professorSlots: { type: "integer", minimum: 1, default: 1 },
+            tagIds: { type: "array", items: { type: "string" } },
           },
         },
         response: {
@@ -54,12 +105,19 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
 
       const { tagIds, ...data } = parsed.data;
 
+      // Owner aynı zamanda ilk üye olarak eklenir (kendi kontenjanından bir hoca slot'u tutar)
       const project = await prisma.project.create({
         data: {
           ...data,
           ownerId: request.user!.id,
           tags: {
             create: tagIds.map((tagId) => ({ tagId })),
+          },
+          members: {
+            create: {
+              userId: request.user!.id,
+              role: "PROFESSOR",
+            },
           },
         },
         include: {
@@ -97,14 +155,6 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
         },
       },
       response: {
-        200: {
-          type: "object",
-          properties: {
-            success: { type: "boolean" },
-            data: { type: "array", items: { $ref: "Project#" } },
-            meta: { $ref: "PaginationMeta#" },
-          },
-        },
         400: { $ref: "ApiError#" },
       },
     },
@@ -173,16 +223,6 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
         properties: { id: { type: "string",  } },
         required: ["id"],
       },
-      response: {
-        200: {
-          type: "object",
-          properties: {
-            success: { type: "boolean" },
-            data: { $ref: "Project#" },
-          },
-        },
-        404: { $ref: "ApiError#" },
-      },
     },
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
@@ -197,12 +237,37 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
         applications: {
           include: {
             applicant: {
-              select: { id: true, name: true, department: true, avatarUrl: true },
+              select: { id: true, name: true, department: true, avatarUrl: true, role: true },
             },
           },
           orderBy: { createdAt: "desc" },
         },
-        _count: { select: { applications: true } },
+        members: {
+          include: {
+            user: {
+              select: { id: true, name: true, department: true, role: true, avatarUrl: true, year: true },
+            },
+          },
+          orderBy: { joinedAt: "asc" },
+        },
+        invites: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                department: true,
+                role: true,
+                avatarUrl: true,
+              },
+            },
+            inviter: {
+              select: { id: true, name: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        _count: { select: { applications: true, members: true, invites: true } },
       },
     });
 
@@ -210,12 +275,20 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(404).send({ success: false, error: "Proje bulunamadı" });
     }
 
+    // Davet listesi sadece sahibi görebilsin (gizlilik)
+    const session = await getSession(request);
+    const isOwner = session?.user?.id === project.ownerId;
+    const projectOut: any = {
+      ...project,
+      tags: project.tags.map((pt) => pt.tag),
+    };
+    if (!isOwner) {
+      delete projectOut.invites;
+    }
+
     return {
       success: true,
-      data: {
-        ...project,
-        tags: project.tags.map((pt) => pt.tag),
-      },
+      data: projectOut,
     };
   });
 
@@ -240,8 +313,9 @@ const projectRoutes: FastifyPluginAsync = async (fastify) => {
             title: { type: "string" },
             description: { type: "string" },
             status: { type: "string", enum: ["OPEN", "IN_PROGRESS", "COMPLETED", "CANCELLED"] },
-            maxMembers: { type: "integer" },
-            tagIds: { type: "array", items: { type: "string",  } },
+            studentSlots: { type: "integer", minimum: 0 },
+            professorSlots: { type: "integer", minimum: 1 },
+            tagIds: { type: "array", items: { type: "string" } },
           },
         },
         response: {

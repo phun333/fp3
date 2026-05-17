@@ -123,43 +123,42 @@ const matchingRoutes: FastifyPluginAsync = async (fastify) => {
           .filter((ut) => studentTagIds.includes(ut.tagId))
           .map((ut) => ut.tag);
 
-        // Temel tag eşleşme skoru (0-100 arası, %60 ağırlık)
-        const tagScore =
-          (commonTags.length / Math.max(studentTagIds.length, profTagIds.length)) * 100;
+        // Temel skor: öğrencinin istediği tag'lerin yüzde kaçı hocada var
+        // (3/3 ortak ise %100; hocanın ekstra tag'leri skoru DÜŞÜRMEZ)
+        const coverage =
+          studentTagIds.length === 0
+            ? 0
+            : (commonTags.length / studentTagIds.length) * 100;
+        const tagScore = coverage;
 
-        // Amaç bonusu (%25 ağırlık)
-        let purposeScore = 0;
+        // Açık proje / yayın varsa küçük bonus puanlar (toplam 100 cap'i ile)
+        let purposeBonus = 0;
         if (purpose === "PROJECT") {
-          // Açık proje sayısına göre bonus
           const openProjectCount = prof.projects.length;
-          purposeScore = Math.min(openProjectCount * 25, 100);
-
-          // Projelerin tag'leriyle ek eşleşme
           const projectTagOverlap = prof.projects.some((p) =>
             p.tags.some((pt) => studentTagIds.includes(pt.tagId))
           );
-          if (projectTagOverlap) purposeScore = Math.min(purposeScore + 30, 100);
+          purposeBonus =
+            Math.min(openProjectCount * 5, 15) + (projectTagOverlap ? 10 : 0);
         } else {
-          // ARTICLE - yayın sayısına göre bonus
           const pubCount = prof.publications.length;
-          purposeScore = Math.min(pubCount * 20, 100);
-
-          // Yayınların tag'leriyle ek eşleşme
           const pubTagOverlap = prof.publications.some((pub) =>
             pub.tags.some((pt) => studentTagIds.includes(pt.tagId))
           );
-          if (pubTagOverlap) purposeScore = Math.min(purposeScore + 30, 100);
+          purposeBonus =
+            Math.min(pubCount * 3, 15) + (pubTagOverlap ? 10 : 0);
         }
 
-        // Aktivite skoru (%15 ağırlık) - toplam proje + yayın
+        // Tüm tag'ler birebir karşılanıyorsa %100'ün altına inmesin
+        const matchScore = Math.min(
+          100,
+          Math.round(tagScore + purposeBonus)
+        );
+
+        const purposeScore = purposeBonus;
         const activityScore = Math.min(
           (prof._count.projects + prof._count.publications) * 15,
           100
-        );
-
-        // Toplam skor (ağırlıklı)
-        const matchScore = Math.round(
-          tagScore * 0.6 + purposeScore * 0.25 + activityScore * 0.15
         );
 
         return {
