@@ -42,6 +42,23 @@ enum TeamInviteStatus {
   DECLINED
 }
 
+enum ProjectInviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ProfessorApplicationPurpose {
+  PROJECT
+  ARTICLE
+}
+
+enum ProfessorApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
@@ -56,9 +73,14 @@ model User {
   updatedAt     DateTime @updatedAt
 
   // İlişkiler
-  tags          UserTag[]
-  projects      Project[]      @relation("ProjectOwner")
-  applications  Application[]  @relation("Applicant")
+  tags             UserTag[]
+  projects         Project[]      @relation("ProjectOwner")
+  memberships      ProjectMember[] @relation("ProjectMemberships")
+  applications     Application[]  @relation("Applicant")
+  projectInvitesIn ProjectInvite[] @relation("ProjectInviteRecipient")
+  projectInvitesOut ProjectInvite[] @relation("ProjectInviteSender")
+  professorApplicationsSent     ProfessorApplication[] @relation("ProfAppStudent")
+  professorApplicationsReceived ProfessorApplication[] @relation("ProfAppProfessor")
   publications  Publication[]
   teamIdeas     TeamIdea[] @relation("TeamIdeaOwner")
   teamInvites   TeamInvite[] @relation("TeamIdeaInvites")
@@ -93,18 +115,75 @@ model UserTag {
 }
 
 model Project {
-  id          String        @id @default(cuid())
-  title       String
-  description String
-  status      ProjectStatus @default(OPEN)
-  maxMembers  Int           @default(3)
-  ownerId     String
-  owner       User          @relation("ProjectOwner", fields: [ownerId], references: [id])
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  title          String
+  description    String
+  status         ProjectStatus @default(OPEN)
+  studentSlots   Int           @default(2)
+  professorSlots Int           @default(1)
+  ownerId        String
+  owner          User          @relation("ProjectOwner", fields: [ownerId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   tags         ProjectTag[]
   applications Application[]
+  members      ProjectMember[]
+  invites      ProjectInvite[]
+}
+
+model ProjectInvite {
+  id          String              @id @default(cuid())
+  projectId   String
+  userId      String              // davet edilen
+  inviterId   String              // daveti gönderen (proje sahibi)
+  invitedRole UserRole            // STUDENT veya PROFESSOR
+  status      ProjectInviteStatus @default(PENDING)
+  message     String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ProjectInviteRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  inviter User    @relation("ProjectInviteSender", fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+model ProfessorApplication {
+  id          String                       @id @default(cuid())
+  studentId   String
+  professorId String
+  purpose     ProfessorApplicationPurpose  @default(PROJECT)
+  title       String
+  description String
+  tagIds      String                       // comma-separated tag id list (snapshot)
+  message     String?
+  status      ProfessorApplicationStatus   @default(PENDING)
+  createdProjectId String?                 // kabul edilince oluşturulan proje
+  createdAt   DateTime                     @default(now())
+  updatedAt   DateTime                     @updatedAt
+
+  student   User @relation("ProfAppStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  professor User @relation("ProfAppProfessor", fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([professorId])
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      UserRole // STUDENT veya PROFESSOR
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ProjectMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
 }
 
 model ProjectTag {
@@ -143,9 +222,9 @@ model Application {
   status      ApplicationStatus @default(PENDING)
   message     String?
   projectId   String
-  project     Project           @relation(fields: [projectId], references: [id])
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   applicantId String
-  applicant   User              @relation("Applicant", fields: [applicantId], references: [id])
+  applicant   User              @relation("Applicant", fields: [applicantId], references: [id], onDelete: Cascade)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 

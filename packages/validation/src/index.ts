@@ -45,14 +45,16 @@ export const updateTagsSchema = z.object({
 export const createProjectSchema = z.object({
   title: z.string().min(5, "Başlık en az 5 karakter olmalıdır").max(200),
   description: z.string().min(20, "Açıklama en az 20 karakter olmalıdır").max(5000),
-  maxMembers: z.number().int().min(1).max(20).default(3),
+  studentSlots: z.number().int().min(0).max(50).default(2),
+  professorSlots: z.number().int().min(1).max(20).default(1),
   tagIds: z.array(z.string()).min(1).max(10),
 });
 
 export const updateProjectSchema = z.object({
   title: z.string().min(5).max(200).optional(),
   description: z.string().min(20).max(5000).optional(),
-  maxMembers: z.number().int().min(1).max(20).optional(),
+  studentSlots: z.number().int().min(0).max(50).optional(),
+  professorSlots: z.number().int().min(1).max(20).optional(),
   status: z.enum(["OPEN", "IN_PROGRESS", "CLOSED"]).optional(),
   tagIds: z.array(z.string()).min(1).max(10).optional(),
 });

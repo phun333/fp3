@@ -65,13 +65,24 @@ export interface Project {
   title: string;
   description: string;
   status: ProjectStatus;
-  maxMembers: number;
+  studentSlots: number;
+  professorSlots: number;
   ownerId: string;
   owner?: User;
   createdAt: string;
   updatedAt: string;
   tags?: ProjectTag[];
   applications?: Application[];
+  members?: ProjectMember[];
+}
+
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  role: UserRole;
+  joinedAt: string;
+  user?: User;
 }
 
 export interface TeamIdea {
