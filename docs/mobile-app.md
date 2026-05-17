@@ -57,7 +57,7 @@ seviyeli **dinamik host çözümleme**:
 `.env.example`:
 ```env
 # Gerekirse manuel override
-EXPO_PUBLIC_API_URL=http://192.168.1.34:3001
+EXPO_PUBLIC_API_URL=http://192.168.1.X:3001
 ```
 
 API tarafında Better Auth'un `trustedOrigins` callback'i bu LAN IP'lerini

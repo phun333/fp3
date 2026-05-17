@@ -72,7 +72,7 @@ içindeki `SCALAR_HTML` template.)
 
 ```env
 # apps/ai-service/.env
-DATABASE_URL="postgresql://ali@localhost:5432/fp3_pi_isolated_20260514"
+DATABASE_URL="postgresql://postgres:<parola>@localhost:5432/fp3"
 CORS_ORIGINS="http://localhost:3001,http://localhost:3100"
 ```
 

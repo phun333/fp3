@@ -42,7 +42,7 @@ trustedOrigins: (request?: Request) => {
 
 Bu sayede:
 - Web (`localhost:3000`) — env'den
-- iPhone (`exp://192.168.1.34:8081`) — LAN pattern'den otomatik kabul
+- iPhone (`exp://192.168.1.X:8081`) — LAN pattern'den otomatik kabul
 - Expo schemes — sabit listede
 
 ## 🍪 Web: Cookie Akışı

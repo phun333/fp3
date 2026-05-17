@@ -9,7 +9,7 @@ kullanmaz** — Homebrew servisi olarak `postgresql@17` çalışır.
 
 ```env
 # apps/api/.env
-DATABASE_URL="postgresql://ali@localhost:5432/fp3_pi_isolated_20260514"
+DATABASE_URL="postgresql://postgres:<parola>@localhost:5432/fp3"
 ```
 
 - Host: `localhost:5432`
