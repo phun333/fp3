@@ -39,16 +39,43 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const USER_STORAGE_KEY = "fp3.user";
+
+function loadCachedUser(): User | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(USER_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as User) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedUser(u: User | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (u) window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(u));
+    else window.localStorage.removeItem(USER_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  // İlk açılışta localStorage'taki kullanıcıyı yükle — API gelmeden de oturum
+  // açık görünür. Arka planda /get-session ile doğrulanır.
+  const [user, setUser] = useState<User | null>(() => loadCachedUser());
   const [loading, setLoading] = useState(true);
 
   const refreshSession = useCallback(async () => {
     try {
       const data = await authApi.getSession();
-      setUser(data.user || null);
+      const u = (data?.user as User) || null;
+      setUser(u);
+      saveCachedUser(u);
     } catch {
-      setUser(null);
+      // Ağ hatası (örn. API restart sırasında): cache'deki kullanıcıyı koru.
+      // Sadece API "user yok" derse user state'i temizleriz.
     } finally {
       setLoading(false);
     }
@@ -75,7 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await authApi.signOut();
+    try {
+      await authApi.signOut();
+    } catch {
+      // ignore
+    }
+    saveCachedUser(null);
     setUser(null);
   };
 
