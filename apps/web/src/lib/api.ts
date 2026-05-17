@@ -14,12 +14,16 @@ export async function api<T = any>(
 ): Promise<T> {
   const { method = "GET", body, headers = {} } = options;
 
+  // Body olmadan Content-Type: application/json göndermeyelim
+  // (Fastify'ın JSON parser'ı boş body'yi parse etmeye çalışıp 500 atar)
+  const finalHeaders: Record<string, string> = { ...headers };
+  if (body !== undefined && body !== null) {
+    finalHeaders["Content-Type"] = finalHeaders["Content-Type"] || "application/json";
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
+    headers: finalHeaders,
     body: body ? JSON.stringify(body) : undefined,
     credentials: "include",
   });
@@ -80,6 +84,7 @@ export const projectsApi = {
   update: (id: string, body: any) =>
     api(`/api/projects/${id}`, { method: "PUT", body }),
   delete: (id: string) => api(`/api/projects/${id}`, { method: "DELETE" }),
+  mine: () => api("/api/my-projects"),
 };
 
 // Publications API
@@ -177,6 +182,48 @@ export const savedMatchesApi = {
 
   ids: (purpose?: string) =>
     api(`/api/saved-matches/ids${purpose ? `?purpose=${purpose}` : ""}`),
+};
+
+// Invitations API
+export const invitationsApi = {
+  send: (
+    projectId: string,
+    body: { userId: string; message?: string }
+  ) => api(`/api/projects/${projectId}/invite`, { method: "POST", body }),
+  mine: () => api("/api/invitations"),
+  listForProject: (projectId: string) =>
+    api(`/api/projects/${projectId}/invitations`),
+  respond: (id: string, status: "ACCEPTED" | "REJECTED") =>
+    api(`/api/invitations/${id}`, { method: "PUT", body: { status } }),
+};
+
+// Users search (davet için)
+export const usersApi = {
+  search: (q: string, role?: "STUDENT" | "PROFESSOR", limit = 10) => {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (role) p.set("role", role);
+    p.set("limit", String(limit));
+    return api(`/api/users/search?${p.toString()}`);
+  },
+};
+
+// Professor Applications API (öğrenci → hoca direkt başvuru)
+export const professorApplicationsApi = {
+  send: (body: {
+    professorId: string;
+    purpose?: "PROJECT" | "ARTICLE";
+    title: string;
+    description: string;
+    tagIds: string[];
+    message?: string;
+  }) => api("/api/professor-applications", { method: "POST", body }),
+  incoming: () => api("/api/professor-applications/incoming"),
+  mine: () => api("/api/professor-applications/mine"),
+  respond: (
+    id: string,
+    body: { status: "ACCEPTED" | "REJECTED"; studentSlots?: number; professorSlots?: number }
+  ) => api(`/api/professor-applications/${id}`, { method: "PUT", body }),
 };
 
 // AI API

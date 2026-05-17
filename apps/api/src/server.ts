@@ -19,9 +19,29 @@ import aiRoutes from "./routes/ai";
 import matchingRoutes from "./routes/matching";
 import savedMatchRoutes from "./routes/saved-matches";
 import teamIdeaRoutes from "./routes/team-ideas";
+import invitationRoutes from "./routes/invitations";
+import professorApplicationRoutes from "./routes/professor-applications";
 
 const app = Fastify({
   logger: true,
+});
+
+// Mobil istemciler (özellikle iOS NSURLSession) Set-Cookie'leri otomatik
+// yakalayıp Cookie header'a HTTP standart `;` yerine `,` ile ekleyebiliyor.
+// Bu bozuk cookie Better Auth'u şaşırtıyor. Authorization (Bearer) geldiğinde
+// Cookie header'ını yok sayıp sadece Bearer token üzerinden session açıyoruz.
+app.addHook("onRequest", async (req) => {
+  const auth = req.headers["authorization"] as string | undefined;
+  if (auth && auth.toLowerCase().startsWith("bearer ")) {
+    delete req.headers.cookie;
+  } else {
+    // Bearer yoksa, Cookie header'ında virgüle bağlı çoklu cookie varsa
+    // bunları HTTP standart `;` ile normalize et.
+    const cookie = req.headers.cookie as string | undefined;
+    if (cookie && cookie.includes(",")) {
+      req.headers.cookie = cookie.replace(/,(?=\s*[A-Za-z0-9_.-]+=)/g, "; ");
+    }
+  }
 });
 
 // CORS
@@ -41,12 +61,18 @@ registerSharedSchemas(app);
 app.register(setupSwagger);
 
 // Body parser - raw body desteği (Better Auth için)
+// Boş body'yi de tolere et (DELETE / body'siz POST için)
 app.addContentTypeParser(
   "application/json",
   { parseAs: "string" },
   (req, body, done) => {
+    const raw = (body as string) ?? "";
+    if (raw.length === 0) {
+      done(null, undefined);
+      return;
+    }
     try {
-      const json = JSON.parse(body as string);
+      const json = JSON.parse(raw);
       done(null, json);
     } catch (err) {
       done(err as Error, undefined);
@@ -88,6 +114,8 @@ app.register(aiRoutes);
 app.register(matchingRoutes);
 app.register(savedMatchRoutes);
 app.register(teamIdeaRoutes);
+app.register(invitationRoutes);
+app.register(professorApplicationRoutes);
 
 // Global error handler
 app.setErrorHandler((error: any, request, reply) => {
