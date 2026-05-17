@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TagBadge } from "./tag-badge";
@@ -16,16 +15,15 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({
-  id,
+  id: _id,
   name,
   department,
   bio,
-  role,
+  role: _role,
   tags,
   matchScore,
   _count,
 }: ProfileCardProps) {
-  const href = role === "PROFESSOR" ? `/professors/${id}` : `/profile/${id}`;
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -34,9 +32,8 @@ export function ProfileCard({
     .toUpperCase();
 
   return (
-    <Link href={href}>
-      <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full border-border/80">
-        <CardContent className="p-5">
+    <Card className="shadow-sm h-full border-border/80">
+      <CardContent className="p-5">
           <div className="flex items-start gap-4">
             <Avatar className="h-12 w-12">
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
@@ -75,13 +72,12 @@ export function ProfileCard({
               )}
             </div>
           )}
-          {matchScore !== undefined && (
-            <div className="mt-3">
-              <MatchScore score={matchScore} />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </Link>
+        {matchScore !== undefined && (
+          <div className="mt-3">
+            <MatchScore score={matchScore} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

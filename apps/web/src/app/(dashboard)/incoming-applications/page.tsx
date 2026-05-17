@@ -541,12 +541,9 @@ function ApplicationCard({
 
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <Link
-                  href={`/profile/${app.applicant?.id}`}
-                  className="font-semibold hover:text-primary transition-colors"
-                >
+                <span className="font-semibold">
                   {app.applicant?.name}
-                </Link>
+                </span>
                 <Badge variant={meta.variant} className="gap-1">
                   <StatusIcon size={12} weight="bold" />
                   {meta.label}
@@ -759,12 +756,9 @@ function RequestCard({
               </AvatarFallback>
             </Avatar>
             <div>
-              <Link
-                href={`/profile/${app.student?.id}`}
-                className="font-medium text-sm hover:text-primary"
-              >
+              <span className="font-medium text-sm">
                 {app.student?.name}
-              </Link>
+              </span>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <GraduationCap size={12} weight="duotone" />
                 {app.student?.department}
@@ -942,12 +936,9 @@ function InvitationCard({
               </AvatarFallback>
             </Avatar>
             <div>
-              <Link
-                href={`/profile/${inv.inviter?.id}`}
-                className="font-medium text-sm hover:text-primary"
-              >
+              <span className="font-medium text-sm">
                 {inv.inviter?.name}
-              </Link>
+              </span>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <UserCircle size={12} weight="duotone" />
                 {inv.inviter?.department}

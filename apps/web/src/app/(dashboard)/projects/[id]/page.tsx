@@ -347,12 +347,9 @@ export default function ProjectDetailPage({
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
-                        <Link
-                          href={`/profile/${app.applicant?.id}`}
-                          className="font-medium text-sm hover:text-primary"
-                        >
+                        <span className="font-medium text-sm">
                           {app.applicant?.name}
-                        </Link>
+                        </span>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                           {app.applicant?.role === "PROFESSOR" ? (
                             <UserCircle size={12} weight="duotone" />
@@ -516,12 +513,9 @@ function InvitesCard({ invites }: { invites: any[] }) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <Link
-                      href={`/profile/${inv.user?.id}`}
-                      className="font-medium text-sm hover:text-primary truncate block"
-                    >
+                    <span className="font-medium text-sm truncate block">
                       {inv.user?.name}
-                    </Link>
+                    </span>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       {inv.invitedRole === "PROFESSOR" ? (
                         <UserCircle size={12} weight="duotone" />
@@ -638,11 +632,10 @@ function MemberGroup({
           {members.map((m: any) => {
             const isOwner = m.user?.id === ownerId;
             return (
-              <Link
+              <div
                 key={m.id}
-                href={`/profile/${m.user?.id}`}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50",
+                  "flex items-center gap-3 rounded-lg p-2",
                   isOwner && "bg-primary/5"
                 )}
               >
@@ -669,7 +662,7 @@ function MemberGroup({
                     {m.user?.year ? ` • ${m.user.year}. sınıf` : ""}
                   </p>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
