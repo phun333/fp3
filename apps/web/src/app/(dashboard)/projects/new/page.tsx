@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagSelector } from "@/components/tag-selector";
+import { AiTagSuggestions } from "@/components/ai-tag-suggestions";
 import { ArrowLeft } from "@phosphor-icons/react";
 import Link from "next/link";
 
@@ -115,8 +116,18 @@ export default function NewProjectPage() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label>İlgili Tag&apos;ler</Label>
+              <AiTagSuggestions
+                text={`${form.title}\n\n${form.description}`}
+                selectedTagIds={tagIds}
+                onAdd={(id) => {
+                  if (!tagIds.includes(id) && tagIds.length < 10) {
+                    setTagIds([...tagIds, id]);
+                  }
+                }}
+                description="Başlık + açıklamadan tag önerisi al."
+              />
               <TagSelector selected={tagIds} onChange={setTagIds} max={10} />
             </div>
             <Button type="submit" disabled={mutation.isPending} className="w-full">

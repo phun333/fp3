@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TagSelector } from "@/components/tag-selector";
+import { AiTagSuggestions } from "@/components/ai-tag-suggestions";
 import { TagBadge } from "@/components/tag-badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -248,6 +249,19 @@ function ProfileOnboarding({ profile, onComplete }: { profile: any; onComplete: 
             <p className="text-sm text-muted-foreground">
               Seni en iyi tanımlayan alanları seç. Bu tag&apos;ler akademisyen eşleştirmesinde kullanılacak.
             </p>
+
+            {form.bio && form.bio.trim().length >= 20 && (
+              <AiTagSuggestions
+                text={form.bio}
+                selectedTagIds={selectedTags}
+                onAdd={(id) => {
+                  if (!selectedTags.includes(id) && selectedTags.length < 10) {
+                    setSelectedTags([...selectedTags, id]);
+                  }
+                }}
+                description="Bio'na göre ilgi alanı önerileri."
+              />
+            )}
 
             <TagSelector
               selected={selectedTags}
