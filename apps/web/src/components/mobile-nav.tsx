@@ -27,6 +27,7 @@ const studentLinks = [
   { href: "/discover", label: "Keşfet", icon: House },
   { href: "/professors", label: "Akademisyenler", icon: Users },
   { href: "/projects", label: "Projeler", icon: Briefcase },
+  { href: "/incoming-applications", label: "Gelen Kutusu", icon: Tray },
   { href: "/publications", label: "Yayınlar", icon: BookOpen },
   { href: "/saved-matches", label: "Kaydedilenler", icon: BookmarkSimple },
   { href: "/profile", label: "Profilim", icon: UserCircle },
@@ -38,7 +39,7 @@ const professorLinks = [
   { href: "/discover", label: "Keşfet", icon: Compass },
   { href: "/professors", label: "Akademisyenler", icon: Users },
   { href: "/projects", label: "Projeler", icon: Briefcase },
-  { href: "/incoming-applications", label: "Gelen Başvurular", icon: Tray },
+  { href: "/incoming-applications", label: "Gelen Kutusu", icon: Tray },
   { href: "/publications", label: "Yayınlar", icon: BookOpen },
   { href: "/profile", label: "Profilim", icon: UserCircle },
 ];
