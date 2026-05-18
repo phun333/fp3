@@ -1,5 +1,6 @@
 import os
 import logging
+import warnings
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -14,6 +15,12 @@ from keybert import KeyBERT
 import numpy as np
 
 load_dotenv()
+
+# KeyBERT'in MMR adımı bazen çok kısa/boş aday keyphrase'ler üretiyor;
+# sklearn cosine_similarity bu vektörler için divide-by-zero uyarısı atıyor.
+# Sonuç etkilenmiyor (NaN'ler doğal olarak elenir), sadece log temizliği için.
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="sklearn")
+np.seterr(divide="ignore", invalid="ignore", over="ignore")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -59,7 +66,11 @@ def load_tags_from_db():
 
         if tag_cache and model:
             tag_names = [t["name"] for t in tag_cache]
-            tag_embeddings = model.encode(tag_names, convert_to_numpy=True)
+            # normalize_embeddings=True → np.dot direkt cosine similarity verir
+            # (skorlar [-1, 1] aralığında, anlamlı ve standart)
+            tag_embeddings = model.encode(
+                tag_names, convert_to_numpy=True, normalize_embeddings=True
+            )
 
         logger.info(f"✅ {len(tag_cache)} tag yüklendi ve embedding'leri hesaplandı")
     except Exception as e:
@@ -259,7 +270,10 @@ def match_tags(
         # Sadece yeterli uzunluktaki anlamlı keyword'leri ekle
         queries.extend([k for k in keywords if len(k) >= 3])
 
-    query_embeddings = model.encode(queries, convert_to_numpy=True)
+    # normalize_embeddings=True ile L2-norm = 1 olur → np.dot = gerçek cosine similarity
+    query_embeddings = model.encode(
+        queries, convert_to_numpy=True, normalize_embeddings=True
+    )
 
     # Cosine similarity matrisi: (n_tags, n_queries)
     sim_matrix = np.dot(tag_embeddings, query_embeddings.T)

@@ -29,7 +29,7 @@ const aiRoutes: FastifyPluginAsync = async (fastify) => {
             type: "object",
             properties: {
               success: { type: "boolean" },
-              data: { type: "object" },
+              data: { type: "object", additionalProperties: true },
             },
           },
           400: { $ref: "ApiError#" },
@@ -96,7 +96,7 @@ const aiRoutes: FastifyPluginAsync = async (fastify) => {
             type: "object",
             properties: {
               success: { type: "boolean" },
-              data: { type: "object" },
+              data: { type: "object", additionalProperties: true },
             },
           },
           400: { $ref: "ApiError#" },
@@ -151,7 +151,7 @@ const aiRoutes: FastifyPluginAsync = async (fastify) => {
           type: "object",
           properties: {
             success: { type: "boolean" },
-            data: { type: "object" },
+            data: { type: "object", additionalProperties: true },
           },
         },
         503: { $ref: "ApiError#" },
@@ -185,7 +185,7 @@ const aiRoutes: FastifyPluginAsync = async (fastify) => {
             type: "object",
             properties: {
               success: { type: "boolean" },
-              data: { type: "object" },
+              data: { type: "object", additionalProperties: true },
             },
           },
           503: { $ref: "ApiError#" },
