@@ -49,7 +49,7 @@ export default function ProfessorsPage() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(data?.data || []).map((p: any) => (
-              <ProfileCard key={p.id} {...p} />
+              <ProfileCard key={p.id} {...p} role="PROFESSOR" />
             ))}
           </div>
           {data?.data?.length === 0 && (

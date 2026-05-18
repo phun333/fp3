@@ -47,7 +47,7 @@ export default function DiscoverPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {(students?.data || []).map((s: any) => (
-                <ProfileCard key={s.id} {...s} />
+                <ProfileCard key={s.id} {...s} role="STUDENT" />
               ))}
               {students?.data?.length === 0 && <EmptyState />}
             </div>
@@ -78,7 +78,7 @@ export default function DiscoverPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(professors?.data || []).map((p: any) => (
-                  <ProfileCard key={p.id} {...p} />
+                  <ProfileCard key={p.id} {...p} role="PROFESSOR" />
                 ))}
                 {professors?.data?.length === 0 && <EmptyState />}
               </div>

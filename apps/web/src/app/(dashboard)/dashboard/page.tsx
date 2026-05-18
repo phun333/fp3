@@ -496,7 +496,7 @@ function ProfessorDashboard() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {(recStudents?.data || []).slice(0, 4).map((s: any) => (
-              <ProfileCard key={s.id} {...s} />
+              <ProfileCard key={s.id} {...s} role="STUDENT" />
             ))}
           </div>
         </section>
